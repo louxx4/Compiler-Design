@@ -35,6 +35,7 @@ public class Main {
             System.exit(7);
             return;
         }
+        // using ssa as intermediate representation
         List<IrGraph> graphs = new ArrayList<>();
         for (FunctionTree function : program.topLevelTrees()) {
             SsaTranslation translation = new SsaTranslation(function, new LocalValueNumbering());
@@ -42,6 +43,7 @@ public class Main {
         }
 
         // TODO: generate assembly and invoke gcc instead of generating abstract assembly
+    
         String s = new CodeGenerator().generateCode(graphs);
         Files.writeString(output, s);
     }
@@ -57,5 +59,9 @@ public class Main {
             System.exit(42);
             throw new AssertionError("unreachable");
         }
+    }
+
+    private static void instructionSelection(List<IrGraph> graphs) {
+        //TODO
     }
 }

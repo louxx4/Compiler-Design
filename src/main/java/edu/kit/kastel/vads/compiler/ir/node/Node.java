@@ -1,11 +1,11 @@
 package edu.kit.kastel.vads.compiler.ir.node;
 
-import edu.kit.kastel.vads.compiler.ir.util.DebugInfo;
-import edu.kit.kastel.vads.compiler.ir.IrGraph;
-import edu.kit.kastel.vads.compiler.ir.util.DebugInfoHelper;
-
 import java.util.ArrayList;
 import java.util.List;
+
+import edu.kit.kastel.vads.compiler.ir.IrGraph;
+import edu.kit.kastel.vads.compiler.ir.util.DebugInfo;
+import edu.kit.kastel.vads.compiler.ir.util.DebugInfoHelper;
 
 /// The base class for all nodes.
 public sealed abstract class Node permits BinaryOperationNode, Block, ConstIntNode, Phi, ProjNode, ReturnNode, StartNode {
