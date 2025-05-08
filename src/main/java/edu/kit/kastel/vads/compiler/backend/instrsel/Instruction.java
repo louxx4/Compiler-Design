@@ -5,8 +5,12 @@ public final class Instruction<S extends Parameter,T extends Parameter> {
     private S left;
     private T right;
 
-    public Instruction(String operation, S left) {
+    public Instruction(String operation) {
         this.operation = operation;
+    }
+
+    public Instruction(String operation, S left) {
+        this(operation);
         this.left = left;
     }
 
