@@ -10,26 +10,30 @@ import edu.kit.kastel.vads.compiler.ir.node.DivNode;
 import edu.kit.kastel.vads.compiler.ir.node.ModNode;
 import edu.kit.kastel.vads.compiler.ir.node.MulNode;
 import edu.kit.kastel.vads.compiler.ir.node.Node;
+import edu.kit.kastel.vads.compiler.ir.node.ProjNode;
 import edu.kit.kastel.vads.compiler.ir.node.ReturnNode;
 import edu.kit.kastel.vads.compiler.ir.node.SubNode;
 
 public class InstructionSelector {
 
+    Integer REG_COUNTER = 0;
+
     // Creates a maximal munch cover of the IR tree.
     // Expects a graph for every function within the program.
-    public static void performIS(List<IrGraph> irGraphs) {
+    public List<Instruction> performIS(List<IrGraph> irGraphs) {
         List<Instruction> builder = new ArrayList<>();
         for (IrGraph functionGraph : irGraphs) {
             // String funcName = functionGraph.name();
-            TempReg funcResult = maximalMunch(functionGraph.startBlock(), builder);
+            TempReg funcResult = maximalMunch(functionGraph.endBlock().predecessor(0), builder);
             builder.add(new Instruction("mov", new FixReg("eax"), funcResult));
             builder.add(new Instruction("ret"));
         }
+        return builder;
     }
 
     // Performs recursive maximal munch on a function graph, storing the resulting 
     // instruction sequence within a sorted list.
-    public static TempReg maximalMunch(Node node, List<Instruction> builder) {
+    public TempReg maximalMunch(Node node, List<Instruction> builder) {
         TempReg res;
         
         switch (node) {
@@ -40,6 +44,7 @@ public class InstructionSelector {
             case DivNode div -> res = handleDivNode(div, builder);
             case ReturnNode ret -> res = handleReturnNode(ret, builder);
             default -> {
+                System.out.println("Node was of type " + node.toString());
                 return null;
             }
         }
@@ -47,27 +52,40 @@ public class InstructionSelector {
         return res;
     }
 
-    private static TempReg handleReturnNode(ReturnNode ret, List<Instruction> builder) {
-        TempReg res = new TempReg();
-        Node child = ret.predecessor(0);
+    private TempReg handleReturnNode(ReturnNode ret, List<Instruction> builder) {
+        Node left = ret.predecessor(0);
+        TempReg res;
 
-        switch(child) {
-            case ConstIntNode c ->  builder.add(
-                new Instruction("mov", res, new Immediate(c.value()))); 
-            default -> res = maximalMunch(child, builder);
+        switch(left) {
+            case ConstIntNode c -> { 
+                res = new TempReg(REG_COUNTER++);
+                builder.add(new Instruction("mov", res, new Immediate(c.value()))); 
+            }
+            case ProjNode _ -> {
+                Node right = ret.predecessor(1);
+                switch(right) {
+                    case ConstIntNode c2 -> {
+                        res = new TempReg(REG_COUNTER++);
+                        builder.add(new Instruction("mov", res, new Immediate(c2.value())));
+                    }
+                    default -> res = maximalMunch(right, builder);
+                }
+            }
+            default -> res = maximalMunch(left, builder);
         }
 
         return res;
     }
 
-    private static TempReg handleAddNode(AddNode add, List<Instruction> builder) {
+    private TempReg handleAddNode(AddNode add, List<Instruction> builder) {
         Node left = add.predecessor(0);
         Node right = add.predecessor(1);
         Pair children = new Pair(left, right);
-        TempReg res = new TempReg();
+        TempReg res;
 
         switch(children.pattern) {
             case CONST_CONST -> {
+                res = new TempReg(REG_COUNTER++);
                 builder.add(new Instruction("mov", res, 
                     new Immediate(children.val_l + children.val_r)));
             }
@@ -91,14 +109,15 @@ public class InstructionSelector {
         return res;
     }
 
-    private static TempReg handleSubNode(SubNode sub, List<Instruction> builder) {
+    private TempReg handleSubNode(SubNode sub, List<Instruction> builder) {
         Node left = sub.predecessor(0);
         Node right = sub.predecessor(1);
         Pair children = new Pair(left, right);
-        TempReg res = new TempReg();
+        TempReg res;
 
         switch(children.pattern) {
             case CONST_CONST -> {
+                res = new TempReg(REG_COUNTER++);
                 builder.add(new Instruction("mov", res, 
                     new Immediate(children.val_l - children.val_r)));
             }
@@ -122,14 +141,15 @@ public class InstructionSelector {
         return res;
     }
 
-    private static TempReg handleMulNode(MulNode mul, List<Instruction> builder) {
+    private TempReg handleMulNode(MulNode mul, List<Instruction> builder) {
         Node left = mul.predecessor(0);
         Node right = mul.predecessor(1);
         Pair children = new Pair(left, right);
-        TempReg res = new TempReg();
+        TempReg res;
 
         switch(children.pattern) {
             case CONST_CONST -> {
+                res = new TempReg(REG_COUNTER++);
                 builder.add(new Instruction("mov", res, 
                     new Immediate(children.val_l * children.val_r)));
             }
@@ -165,11 +185,11 @@ public class InstructionSelector {
         return res;
     }
 
-    private static TempReg handleModNode(ModNode mod, List<Instruction> builder) {
+    private TempReg handleModNode(ModNode mod, List<Instruction> builder) {
         Node left = mod.predecessor(0);
         Node right = mod.predecessor(1);
         Pair children = new Pair(left, right);
-        TempReg res = new TempReg();
+        TempReg res = new TempReg(REG_COUNTER++);
 
         switch(children.pattern) {
             case CONST_CONST -> {
@@ -201,11 +221,11 @@ public class InstructionSelector {
         return res;
     }
 
-    private static TempReg handleDivNode(DivNode div, List<Instruction> builder) {
+    private TempReg handleDivNode(DivNode div, List<Instruction> builder) {
         Node left = div.predecessor(0);
         Node right = div.predecessor(1);
         Pair children = new Pair(left, right);
-        TempReg res = new TempReg();
+        TempReg res = new TempReg(REG_COUNTER++);
 
         switch(children.pattern) {
             case CONST_CONST -> {

@@ -1,6 +1,14 @@
 package edu.kit.kastel.vads.compiler;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
+
 import edu.kit.kastel.vads.compiler.backend.aasm.CodeGenerator;
+import edu.kit.kastel.vads.compiler.backend.instrsel.Instruction;
+import edu.kit.kastel.vads.compiler.backend.instrsel.InstructionSelector;
 import edu.kit.kastel.vads.compiler.ir.IrGraph;
 import edu.kit.kastel.vads.compiler.ir.SsaTranslation;
 import edu.kit.kastel.vads.compiler.ir.optimize.LocalValueNumbering;
@@ -13,20 +21,15 @@ import edu.kit.kastel.vads.compiler.parser.ast.ProgramTree;
 import edu.kit.kastel.vads.compiler.semantic.SemanticAnalysis;
 import edu.kit.kastel.vads.compiler.semantic.SemanticException;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
-
 public class Main {
     public static void main(String[] args) throws IOException {
-        if (args.length != 2) {
-            System.err.println("Invalid arguments: Expected one input file and one output file");
+        if (args.length != 3) {
+            System.err.println("Invalid arguments: Expected one input file and two output files");
             System.exit(3);
         }
         Path input = Path.of(args[0]);
         Path output = Path.of(args[1]);
+        Path asmOutput = Path.of(args[2]);
         ProgramTree program = lexAndParse(input);
         try {
             new SemanticAnalysis(program).analyze();
@@ -44,6 +47,14 @@ public class Main {
 
         // TODO: generate assembly and invoke gcc instead of generating abstract assembly
     
+        InstructionSelector is = new InstructionSelector();
+        List<Instruction> instructions = is.performIS(graphs);
+        StringBuilder sb = new StringBuilder();
+        for(Instruction i : instructions) {
+            sb.append(i.print()).append("\n");
+        }
+        Files.writeString(asmOutput, sb.toString());
+
         String s = new CodeGenerator().generateCode(graphs);
         Files.writeString(output, s);
     }
@@ -59,9 +70,5 @@ public class Main {
             System.exit(42);
             throw new AssertionError("unreachable");
         }
-    }
-
-    private static void instructionSelection(List<IrGraph> graphs) {
-        //TODO
     }
 }

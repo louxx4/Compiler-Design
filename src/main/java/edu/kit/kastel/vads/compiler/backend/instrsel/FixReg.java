@@ -8,4 +8,9 @@ public class FixReg extends Parameter {
         this.name = name;
     }
 
+    @Override
+    public String print() {
+        return "%" + name;
+    }
+
 }

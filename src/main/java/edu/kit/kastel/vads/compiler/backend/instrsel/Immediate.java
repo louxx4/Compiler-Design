@@ -9,4 +9,9 @@ public class Immediate extends Parameter {
         this.value = value;
     }
 
+    @Override
+    public String print() {
+        return String.valueOf(value);
+    }
+
 }
