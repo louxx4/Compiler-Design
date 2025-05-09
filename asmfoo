@@ -1,4 +1,4 @@
-mov %t0, 35
-shl 2, %t0
-mov %eax, %t0
-ret
+0: mov %t0, 35
+1: shl 2, %t0
+2: mov %eax, %t0
+3: ret
