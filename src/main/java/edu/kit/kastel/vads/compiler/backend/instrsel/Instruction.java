@@ -1,6 +1,8 @@
 package edu.kit.kastel.vads.compiler.backend.instrsel;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public final class Instruction<S extends Parameter,T extends Parameter> {
     private String operation;
@@ -9,8 +11,8 @@ public final class Instruction<S extends Parameter,T extends Parameter> {
     private T right;
 
     //predicates for liveness analysis
-    private List<TempReg> use, def, live; 
-    private List<Instruction> succ;
+    private List<TempReg> use = new ArrayList<>(), def = new ArrayList<>(), live = new ArrayList<>(); 
+    private List<Instruction> succ = new ArrayList<>();
 
     public Instruction(int label, String operation) {
         this.label = label;
@@ -34,12 +36,17 @@ public final class Instruction<S extends Parameter,T extends Parameter> {
     }
 
     public String print() {
-        return String.valueOf(getLabel()) + ": " + 
+        String line = String.valueOf(getLabel()) + ": " + 
             switch(this.parameterCount) {
                 case 0  -> operation;
-                case 1  -> operation + " " + (left == null ? "null" : left.print());
-                default -> operation + " " + (left == null ? "null" : left.print()) + ", " + (right == null ? "null" : right.print());
+                case 1  -> operation + " " + 
+                    (left == null ? "null" : left.print());
+                default -> operation + " " + 
+                    (left == null ? "null" : left.print()) + ", " + 
+                    (right == null ? "null" : right.print());
             };
+        String ident = " ".repeat(30 - line.length());
+        return line + ident + "{live: " + getLive().stream().map(t -> t.print()).collect(Collectors.joining(",")) + "}";
     }
 
     public int getLabel() {
@@ -76,5 +83,17 @@ public final class Instruction<S extends Parameter,T extends Parameter> {
 
     public List<TempReg> getDef() {
         return this.def;
+    }
+
+    public List<TempReg> getLive() {
+        return this.live;
+    }
+
+    public boolean isUndef(TempReg t) {
+        return !this.def.contains(t);
+    }
+
+    public boolean isLive(TempReg t) {
+        return this.live.contains(t);
     }
 }

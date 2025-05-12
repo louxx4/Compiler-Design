@@ -26,7 +26,9 @@ public class InstructionSelector {
         for (IrGraph functionGraph : irGraphs) {
             // String funcName = functionGraph.name();
             TempReg funcResult = maximalMunch(functionGraph.endBlock().predecessor(0), builder);
-            builder.add(new Instruction(INSTR_COUNTER++, "mov", new FixReg("eax"), funcResult));
+            Instruction ins = new Instruction(INSTR_COUNTER++, "mov", new FixReg("eax"), funcResult);
+            ins.use(funcResult);
+            builder.add(ins);
             builder.add(new Instruction(INSTR_COUNTER++, "ret"));
         }
         return builder;
@@ -197,6 +199,7 @@ public class InstructionSelector {
                     ins = new Instruction(INSTR_COUNTER++, 
                         "shl", new Immediate(children.val_l / 2), res);
                     ins.def(res);
+                    ins.use(res);
                     builder.add(ins); 
                 } else {
                     ins = new Instruction(INSTR_COUNTER++, 
@@ -212,6 +215,7 @@ public class InstructionSelector {
                     ins = new Instruction(INSTR_COUNTER++, 
                         "shl", new Immediate(children.val_r / 2), res);
                     ins.def(res);
+                    ins.use(res);
                     builder.add(ins); 
                 } else {
                     ins = new Instruction(INSTR_COUNTER++, 

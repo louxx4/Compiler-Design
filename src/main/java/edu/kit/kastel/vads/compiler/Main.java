@@ -9,6 +9,7 @@ import java.util.List;
 import edu.kit.kastel.vads.compiler.backend.aasm.CodeGenerator;
 import edu.kit.kastel.vads.compiler.backend.instrsel.Instruction;
 import edu.kit.kastel.vads.compiler.backend.instrsel.InstructionSelector;
+import edu.kit.kastel.vads.compiler.backend.liveness.LivenessAnalyzer;
 import edu.kit.kastel.vads.compiler.ir.IrGraph;
 import edu.kit.kastel.vads.compiler.ir.SsaTranslation;
 import edu.kit.kastel.vads.compiler.ir.optimize.LocalValueNumbering;
@@ -48,7 +49,8 @@ public class Main {
         // TODO: generate assembly and invoke gcc instead of generating abstract assembly
     
         InstructionSelector is = new InstructionSelector();
-        List<Instruction> instructions = is.performIS(graphs);
+        Instruction[] instructions = is.performIS(graphs).toArray(Instruction[]::new);
+        instructions = LivenessAnalyzer.performLA(instructions);
         StringBuilder sb = new StringBuilder();
         for(Instruction i : instructions) {
             sb.append(i.print()).append("\n");
