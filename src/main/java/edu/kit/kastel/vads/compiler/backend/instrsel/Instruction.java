@@ -35,8 +35,8 @@ public final class Instruction<S extends Parameter,T extends Parameter> {
         this.parameterCount = 2;
     }
 
-    public String print() {
-        String line = String.valueOf(getLabel()) + ": " + 
+    public String print(boolean debugMode) {
+        String line = (debugMode ? String.valueOf(getLabel()) + ": " : "") + 
             switch(this.parameterCount) {
                 case 0  -> operation;
                 case 1  -> operation + " " + 
@@ -46,7 +46,8 @@ public final class Instruction<S extends Parameter,T extends Parameter> {
                     (right == null ? "null" : right.print());
             };
         String ident = " ".repeat(30 - line.length());
-        return line + ident + "{live: " + getLive().stream().map(t -> t.print()).collect(Collectors.joining(",")) + "}";
+        return line + (debugMode ? ident + "{live: " + 
+            getLive().stream().map(t -> t.print()).collect(Collectors.joining(",")) + "}" : "");
     }
 
     public int getLabel() {

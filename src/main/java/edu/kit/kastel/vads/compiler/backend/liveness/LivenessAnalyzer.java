@@ -21,8 +21,9 @@ public class LivenessAnalyzer {
     // Apply liveness inference rule (K2) to instructions until no change occurs.
     // After saturation all instructions hold their live variables (here: temporary registers).
     public static Instruction[] infereLiveness(Instruction[] instructions) {
-        boolean saturated = true;
-        do { 
+        boolean saturated = false;
+        do {
+            saturated = true;
             for (Instruction l : instructions) {
                 // live(l',t) + succ(l,l') + !def(l,t) -> live(l,t)
                 for (Instruction l_ : (List<Instruction>) l.getSucc()) {

@@ -1,5 +1,9 @@
 package edu.kit.kastel.vads.compiler.parser;
 
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Stream;
+
 import edu.kit.kastel.vads.compiler.lexer.Identifier;
 import edu.kit.kastel.vads.compiler.lexer.Keyword;
 import edu.kit.kastel.vads.compiler.lexer.KeywordType;
@@ -9,10 +13,6 @@ import edu.kit.kastel.vads.compiler.lexer.Operator.OperatorType;
 import edu.kit.kastel.vads.compiler.lexer.Separator;
 import edu.kit.kastel.vads.compiler.lexer.Separator.SeparatorType;
 import edu.kit.kastel.vads.compiler.lexer.Token;
-
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Stream;
 
 public class TokenSource {
     private final List<Token> tokens;
@@ -75,13 +75,10 @@ public class TokenSource {
         return token;
     }
 
-<<<<<<< HEAD
-=======
     public boolean hasMore() {
         return this.idx < this.tokens.size();
     }
 
->>>>>>> template/java
     private void expectHasMore() {
         if (this.idx >= this.tokens.size()) {
             throw new ParseException("reached end of file");

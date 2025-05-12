@@ -6,7 +6,6 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
-import edu.kit.kastel.vads.compiler.backend.aasm.CodeGenerator;
 import edu.kit.kastel.vads.compiler.backend.instrsel.Instruction;
 import edu.kit.kastel.vads.compiler.backend.instrsel.InstructionSelector;
 import edu.kit.kastel.vads.compiler.backend.liveness.LivenessAnalyzer;
@@ -31,7 +30,8 @@ public class Main {
         }
         Path input = Path.of(args[0]);
         Path output = Path.of(args[1]);
-        Path asmOutput = Path.of(args[2]);
+        Path debugOutput = Path.of(args[2]);
+        Path asmOutput = Path.of("asmfoo.s");
         ProgramTree program = lexAndParse(input);
         try {
             new SemanticAnalysis(program).analyze();
@@ -58,14 +58,33 @@ public class Main {
         InstructionSelector is = new InstructionSelector();
         Instruction[] instructions = is.performIS(graphs).toArray(Instruction[]::new);
         instructions = LivenessAnalyzer.performLA(instructions);
-        StringBuilder sb = new StringBuilder();
+
+        StringBuilder sbDebug = new StringBuilder(), sb = new StringBuilder();
+
+        sb.append("""
+        .global main
+        .global _main
+        .text
+        main:
+        call _main
+        # move the return value into the first argument for the syscall
+        movq %rax, %rdi
+        # move the exit syscall number into rax
+        movq $0x3C, %rax
+        syscall
+        _main:
+        """);
+
         for(Instruction i : instructions) {
-            sb.append(i.print()).append("\n");
+            sbDebug.append(i.print(true)).append("\n"); // debug output
+            sb.append(i.print(false)).append("\n"); // real output
         }
+        Files.writeString(debugOutput, sbDebug.toString());
         Files.writeString(asmOutput, sb.toString());
 
-        String s = new CodeGenerator().generateCode(graphs);
-        Files.writeString(output, s);
+        // template output
+        //String s = new CodeGenerator().generateCode(graphs);
+        //Files.writeString(output, s);
     }
 
     private static ProgramTree lexAndParse(Path input) throws IOException {
