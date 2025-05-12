@@ -1,12 +1,13 @@
 package edu.kit.kastel.vads.compiler.lexer;
 
+import java.util.Optional;
+
+import org.jspecify.annotations.Nullable;
+
 import edu.kit.kastel.vads.compiler.Position;
 import edu.kit.kastel.vads.compiler.Span;
 import edu.kit.kastel.vads.compiler.lexer.Operator.OperatorType;
 import edu.kit.kastel.vads.compiler.lexer.Separator.SeparatorType;
-import org.jspecify.annotations.Nullable;
-
-import java.util.Optional;
 
 public class Lexer {
     private final String source;
@@ -86,6 +87,9 @@ public class Lexer {
                         } else if (peek(1) == '*') {
                             currentCommentType = CommentType.MULTI_LINE;
                             multiLineCommentDepth++;
+                        } else if (currentCommentType == CommentType.MULTI_LINE) {
+                            this.pos++;
+                            continue;
                         } else {
                             return null;
                         }

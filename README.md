@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # Starter Code: Java
 
 This project contains starter code written in Java 24.
@@ -72,9 +71,47 @@ To figure out the cause, we provide utilities that ease debugging.
   subgraphs, or https://www.yworks.com/yed-live/, which is relatively good at
   neighbourhoods and larger layouts) that can visualize that output.
   It allows debugging anything related to the IR.
+- `edu.kit.kastel.vads.compiler.ir.util.YCompPrinter` can generate output for [yComp](https://pp.ipd.kit.edu/firm/yComp.html).
+  This tool is more sophisticated than GraphViz. See below for further information.
 
 We also try to keep track of source positions as much as possible through the compiler.
 You can get rid of all that, but it can be helpful to track down where something comes from.
+
+### yComp
+
+To use yComp, you need to patch the provided start script to make it work with modern Java versions.
+You can copy-paste the following script:
+```sh
+#!/bin/sh
+set -e
+
+YCOMP="$0"
+while [ -L "$YCOMP" ]; do
+    LINK="$(readlink "$YCOMP")"
+    case "$LINK" in
+        /*) YCOMP="$LINK";;
+        *)  YCOMP="${YCOMP%/*}/$LINK";;
+    esac
+done
+
+# 1.5.0_22, 1.8, 9, 11.0.2...
+# We only match on the first field
+JAVA_VERSION="$(java -version 2>&1 | awk -F '"' '/version/ {print $2}' | cut -d'.' -f1)"
+
+ADDITIONAL_ARGUMENTS=""
+
+if [ "$JAVA_VERSION" -gt 9 ]; then
+    echo "Java 9+ detected, opening potentially required packages"
+    ADDITIONAL_ARGUMENTS='--add-opens java.desktop/sun.swing=ALL-UNNAMED'
+fi
+
+echo "Commandline is: 'java -Xmx512m $ADDITIONAL_ARGUMENTS -jar "${YCOMP%/*}/yComp.jar" "$@"'"
+java -Xmx512m $ADDITIONAL_ARGUMENTS -jar "${YCOMP%/*}/yComp.jar" "$@"
+```
+
+You can directly dump graphs by setting the `DUMP_GRAPHS` environment variable to `vcg` or by passing `-DdumpGraphs=vcg`
+to the compiler as a JVM argument (not as a program argument!).
+The graphs will be dumped to the `graphs` directory relative to the output file.
 
 ## Miscellaneous
 
@@ -90,38 +127,3 @@ This project provides the wrapper for Gradle 8.14.
 Additionally, the `application` plugin is used to easily specify the main class and build ready-to-use executables.
 To ease setup ceremony,
 the `foojay-resolver-convention` is used to automatically download a JDK matching the toolchain configuration.
-=======
-# Compiler Design Starter Code
-
-> [!IMPORTANT]
-> Try to get something working as early as possible.
-> If anything breaks, let us know on moodle.
-
-This repository contains starter code for the Compiler Design course 2025.
-The code can be found in the `java` and `haskell` branches.
-
-There are several options how you can access the code:
-
-## Using this Template (recommended)
-
-This is a template repository.
-That means you will find a fancy "Use this template" button on the top right.
-By creating a new repository from that, you are almost ready to go.
-You will receive further instructions once you got that part right and the GitHub Action
-had time to run.
-
-> [!TIP]
-> This might take a few seconds. You will need to reload the page to see the changes.
-
-## Downloading a ZIP File
-
-You can also directly download a ZIP file containing the starter code.
-As you might notice, the starter code isn't on this branch.
-That means you have to select either the `java` or the `haskell` branch.
-Then, you can use the integrated `Download ZIP` button.
-
-## Cloning and Pushing
-
-You can obviously also just clone this repository and push its content to wherever you want.
-If you plan to do that, you likely know what you're doing.
->>>>>>> template/main

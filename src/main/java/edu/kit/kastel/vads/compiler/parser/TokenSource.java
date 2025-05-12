@@ -75,6 +75,13 @@ public class TokenSource {
         return token;
     }
 
+<<<<<<< HEAD
+=======
+    public boolean hasMore() {
+        return this.idx < this.tokens.size();
+    }
+
+>>>>>>> template/java
     private void expectHasMore() {
         if (this.idx >= this.tokens.size()) {
             throw new ParseException("reached end of file");
