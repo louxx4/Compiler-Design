@@ -1,5 +1,10 @@
 package edu.kit.kastel.vads.compiler.ir;
 
+import java.util.ArrayDeque;
+import java.util.Deque;
+import java.util.Optional;
+import java.util.function.BinaryOperator;
+
 import edu.kit.kastel.vads.compiler.ir.node.Block;
 import edu.kit.kastel.vads.compiler.ir.node.DivNode;
 import edu.kit.kastel.vads.compiler.ir.node.ModNode;
@@ -24,11 +29,6 @@ import edu.kit.kastel.vads.compiler.parser.ast.Tree;
 import edu.kit.kastel.vads.compiler.parser.ast.TypeTree;
 import edu.kit.kastel.vads.compiler.parser.symbol.Name;
 import edu.kit.kastel.vads.compiler.parser.visitor.Visitor;
-
-import java.util.ArrayDeque;
-import java.util.Deque;
-import java.util.Optional;
-import java.util.function.BinaryOperator;
 
 /// SSA translation as described in
 /// [`Simple and Efficient Construction of Static Single Assignment Form`](https://compilers.cs.uni-saarland.de/papers/bbhlmz13cc.pdf).
@@ -130,6 +130,10 @@ public class SsaTranslation {
             pushSpan(blockTree);
             for (StatementTree statement : blockTree.statements()) {
                 statement.accept(this, data);
+                // skip everything after a return in a block
+                if (statement instanceof ReturnTree) {
+                    break;
+                }
             }
             popSpan();
             return NOT_AN_EXPRESSION;
