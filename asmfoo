@@ -1,8 +1,0 @@
-0: mov %t0, 5                 {live: }
-1: shl 1, %t0                 {live: %t0}
-2: mov %t1, 5                 {live: }
-3: shl 1, %t1                 {live: %t1}
-4: imul %t0, %t1              {live: %t1}
-5: shl 2, %t0                 {live: %t0}
-6: mov %eax, %t0              {live: %t0}
-7: ret                        {live: }

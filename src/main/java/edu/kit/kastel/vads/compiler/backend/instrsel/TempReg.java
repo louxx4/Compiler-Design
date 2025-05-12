@@ -10,6 +10,6 @@ public class TempReg extends Parameter {
 
     @Override
     public String print() {
-        return "%t" + id;
+        return "%r" + id;
     }
 }

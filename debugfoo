@@ -1,0 +1,11 @@
+0: mov %r0, 5                 {live: }
+1: mov %cl, 1                 {live: %r0}
+2: shl %r0                    {live: %r0}
+3: mov %r1, 5                 {live: }
+4: mov %cl, 1                 {live: %r1}
+5: shl %r1                    {live: %r1}
+6: imul %r0, %r1              {live: %r1}
+7: mov %cl, 2                 {live: %r0}
+8: shl %r0                    {live: %r0}
+9: mov %rax, %r0              {live: %r0}
+10: ret                       {live: }
