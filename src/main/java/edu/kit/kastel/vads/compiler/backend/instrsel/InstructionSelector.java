@@ -18,6 +18,7 @@ public class InstructionSelector {
 
     private Integer REG_COUNTER = 0;
     private Integer INSTR_COUNTER = 0;
+    public List<TempReg> ALL_TREGS = new ArrayList<>(); //holds all temporary registers (used for easier recalloc)
 
     // Creates a maximal munch cover of the IR tree.
     // Expects a graph for every function within the program.
@@ -32,6 +33,12 @@ public class InstructionSelector {
             builder.add(new Instruction(INSTR_COUNTER++, "ret"));
         }
         return builder;
+    }
+
+    private TempReg newTempReg() {
+        TempReg t = new TempReg(REG_COUNTER++);
+        ALL_TREGS.add(t);
+        return t;
     }
 
     // Performs recursive maximal munch on a function graph, storing the resulting 
@@ -62,7 +69,7 @@ public class InstructionSelector {
 
         switch(left) {
             case ConstIntNode c -> { 
-                res = new TempReg(REG_COUNTER++);
+                res = newTempReg();
                 ins = new Instruction(INSTR_COUNTER++, 
                     "mov", res, new Immediate(c.value()));
                 ins.def(res);
@@ -72,7 +79,7 @@ public class InstructionSelector {
                 Node right = ret.predecessor(1);
                 switch(right) {
                     case ConstIntNode c2 -> {
-                        res = new TempReg(REG_COUNTER++);
+                        res = newTempReg();
                         ins = new Instruction(INSTR_COUNTER++, 
                             "mov", res, new Immediate(c2.value()));
                         ins.def(res);
@@ -96,7 +103,7 @@ public class InstructionSelector {
 
         switch(children.pattern) {
             case CONST_CONST -> {
-                res = new TempReg(REG_COUNTER++);
+                res = newTempReg();
                 ins = new Instruction(INSTR_COUNTER++, 
                     "mov", res, new Immediate(children.val_l + children.val_r));
                 ins.def(res);
@@ -138,14 +145,14 @@ public class InstructionSelector {
 
         switch(children.pattern) {
             case CONST_CONST -> {
-                res = new TempReg(REG_COUNTER++);
+                res = newTempReg();
                 ins = new Instruction(INSTR_COUNTER++, 
                     "mov", res, new Immediate(children.val_l - children.val_r));
                 ins.def(res);
                 builder.add(ins);
             }
             case CONST_LEFT -> {
-                res = new TempReg(REG_COUNTER++);
+                res = newTempReg();
                 TempReg t = maximalMunch(right, builder); // t <- right
                 ins = new Instruction(INSTR_COUNTER++, 
                     "mov", res, new Immediate(children.val_l)); // res <- imm
@@ -186,7 +193,7 @@ public class InstructionSelector {
 
         switch(children.pattern) {
             case CONST_CONST -> {
-                res = new TempReg(REG_COUNTER++);
+                res = newTempReg();
                 ins = new Instruction(INSTR_COUNTER++, 
                     "mov", res, new Immediate(children.val_l * children.val_r));
                 ins.def(res);
@@ -243,7 +250,7 @@ public class InstructionSelector {
         Node left = mod.predecessor(0);
         Node right = mod.predecessor(1);
         Pair children = new Pair(left, right);
-        TempReg res = new TempReg(REG_COUNTER++);
+        TempReg res = newTempReg();
         Instruction ins;
 
         switch(children.pattern) {
@@ -304,7 +311,7 @@ public class InstructionSelector {
         Node left = div.predecessor(0);
         Node right = div.predecessor(1);
         Pair children = new Pair(left, right);
-        TempReg res = new TempReg(REG_COUNTER++);
+        TempReg res = newTempReg();
         Instruction ins;
 
         switch(children.pattern) {

@@ -1,6 +1,8 @@
 package edu.kit.kastel.vads.compiler.backend.liveness;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import edu.kit.kastel.vads.compiler.backend.instrsel.Instruction;
 import edu.kit.kastel.vads.compiler.backend.instrsel.TempReg;
@@ -38,6 +40,35 @@ public class LivenessAnalyzer {
         } while (!saturated);
 
         return instructions;
+    }
+
+    // Generates the inference graph out of the liveness information set on an instruction sequence.
+    public static InterferenceGraph generateInterferenceGraph(Instruction[] instructions, List<TempReg> tempRegisters) {
+        // generate a node for each temporary register
+        Node[] allNodes = new Node[tempRegisters.size()];
+        for(TempReg t : tempRegisters) {
+            allNodes[t.id] = new Node(t);
+        }
+
+        // initialize adjacency list
+        Set<Integer>[] adjSet = new Set[allNodes.length]; // uses sets to avoid duplicates
+        for(int i = 0; i < adjSet.length; i++) {
+            adjSet[i] = new HashSet<>();
+        }
+
+        // add edges between variables, if their liveness overlaps
+        for(Instruction ins : instructions) {
+            List<TempReg> live = (List<TempReg>) ins.getLive();
+            for(int i = 0; i < live.size(); i++) {
+                int node = live.get(i).id;
+                for(int j = 0; j < live.size() && j != i; j++) {
+                    adjSet[node].add(live.get(j).id); // add neighbour
+                }
+            }
+
+        }
+
+        return new InterferenceGraph(adjSet, allNodes);
     }
 
 }

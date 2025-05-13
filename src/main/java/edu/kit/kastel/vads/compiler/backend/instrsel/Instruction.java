@@ -5,14 +5,14 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public final class Instruction<S extends Parameter,T extends Parameter> {
-    private String operation;
-    private int parameterCount, label;
+    private final String operation;
+    private final int parameterCount, label;
     private S left;
     private T right;
 
     //predicates for liveness analysis
-    private List<TempReg> use = new ArrayList<>(), def = new ArrayList<>(), live = new ArrayList<>(); 
-    private List<Instruction> succ = new ArrayList<>();
+    private final List<TempReg> use = new ArrayList<>(), def = new ArrayList<>(), live = new ArrayList<>(); 
+    private final List<Instruction> succ = new ArrayList<>();
 
     public Instruction(int label, String operation) {
         this.label = label;
