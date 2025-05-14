@@ -201,10 +201,10 @@ public class InstructionSelector {
             }
             case CONST_LEFT -> {
                 res = maximalMunch(right, builder);
-                if(children.val_l % 2 == 0) {
+                if((Math.log(children.val_l) / Math.log(2)) % 1 == 0) {
                     //optimization: << instead of * (if imm is a power of 2)
                     builder.add(new Instruction(INSTR_COUNTER++, 
-                        "mov", new Immediate(children.val_l / 2), new FixReg("cl")));
+                        "mov", new Immediate((int) (Math.log(children.val_l) / Math.log(2))), new FixReg("cl")));
                     ins = new Instruction(INSTR_COUNTER++, 
                         "shl", res);
                     ins.def(res);
@@ -219,10 +219,10 @@ public class InstructionSelector {
             }
             case CONST_RIGHT -> {
                 res = maximalMunch(left, builder);
-                if(children.val_r % 2 == 0) {
+                if((Math.log(children.val_r) / Math.log(2)) % 1 == 0) {
                     //optimization: << instead of * (if imm is a power of 2)
                     builder.add(new Instruction(INSTR_COUNTER++, 
-                        "mov", new Immediate(children.val_r / 2), new FixReg("cl")));
+                        "mov", new Immediate((int) (Math.log(children.val_r) / Math.log(2))), new FixReg("cl")));
                     ins = new Instruction(INSTR_COUNTER++, 
                         "shl", res);
                     ins.def(res);

@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import edu.kit.kastel.vads.compiler.backend.regalloc.Register;
 import edu.kit.kastel.vads.compiler.ir.IrGraph;
 import edu.kit.kastel.vads.compiler.ir.node.AddNode;
 import edu.kit.kastel.vads.compiler.ir.node.BinaryOperationNode;
@@ -21,6 +20,7 @@ import edu.kit.kastel.vads.compiler.ir.node.ReturnNode;
 import edu.kit.kastel.vads.compiler.ir.node.StartNode;
 import edu.kit.kastel.vads.compiler.ir.node.SubNode;
 import static edu.kit.kastel.vads.compiler.ir.util.NodeSupport.predecessorSkipProj;
+import edu.kit.kastel.vads.compiler.backend.regalloc.UselessRegister;
 
 public class CodeGenerator {
 
@@ -28,7 +28,7 @@ public class CodeGenerator {
         StringBuilder builder = new StringBuilder();
         for (IrGraph graph : program) {
             AasmRegisterAllocator allocator = new AasmRegisterAllocator();
-            Map<Node, Register> registers = allocator.allocateRegisters(graph);
+            Map<Node, UselessRegister> registers = allocator.allocateRegisters(graph);
             builder.append("function ")
                 .append(graph.name())
                 .append(" {\n");
@@ -38,12 +38,12 @@ public class CodeGenerator {
         return builder.toString();
     }
 
-    private void generateForGraph(IrGraph graph, StringBuilder builder, Map<Node, Register> registers) {
+    private void generateForGraph(IrGraph graph, StringBuilder builder, Map<Node, UselessRegister> registers) {
         Set<Node> visited = new HashSet<>();
         scan(graph.endBlock(), visited, builder, registers);
     }
 
-    private void scan(Node node, Set<Node> visited, StringBuilder builder, Map<Node, Register> registers) {
+    private void scan(Node node, Set<Node> visited, StringBuilder builder, Map<Node, UselessRegister> registers) {
         for (Node predecessor : node.predecessors()) {
             if (visited.add(predecessor)) {
                 scan(predecessor, visited, builder, registers);
@@ -73,7 +73,7 @@ public class CodeGenerator {
 
     private static void binary(
         StringBuilder builder,
-        Map<Node, Register> registers,
+        Map<Node, UselessRegister> registers,
         BinaryOperationNode node,
         String opcode
     ) {

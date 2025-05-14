@@ -11,7 +11,12 @@ public class Immediate extends Parameter {
 
     @Override
     public String print() {
-        return "$" + this.value;
+        return String.valueOf(this.value);
+    }
+
+    @Override
+    public boolean isSpilled() {
+        return false;
     }
 
 }

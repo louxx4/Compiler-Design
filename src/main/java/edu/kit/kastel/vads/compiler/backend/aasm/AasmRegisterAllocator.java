@@ -5,19 +5,19 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import edu.kit.kastel.vads.compiler.backend.regalloc.Register;
 import edu.kit.kastel.vads.compiler.ir.IrGraph;
 import edu.kit.kastel.vads.compiler.ir.node.Block;
 import edu.kit.kastel.vads.compiler.ir.node.Node;
 import edu.kit.kastel.vads.compiler.ir.node.ProjNode;
 import edu.kit.kastel.vads.compiler.ir.node.ReturnNode;
 import edu.kit.kastel.vads.compiler.ir.node.StartNode;
+import edu.kit.kastel.vads.compiler.backend.regalloc.UselessRegister;
 
 public class AasmRegisterAllocator {
     private int id;
-    private final Map<Node, Register> registers = new HashMap<>();
+    private final Map<Node, UselessRegister> registers = new HashMap<>();
 
-    public Map<Node, Register> allocateRegisters(IrGraph graph) {
+    public Map<Node, UselessRegister> allocateRegisters(IrGraph graph) {
         Set<Node> visited = new HashSet<>();
         visited.add(graph.endBlock());
         scan(graph.endBlock(), visited);

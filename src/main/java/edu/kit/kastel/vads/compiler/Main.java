@@ -8,7 +8,9 @@ import java.util.List;
 
 import edu.kit.kastel.vads.compiler.backend.instrsel.Instruction;
 import edu.kit.kastel.vads.compiler.backend.instrsel.InstructionSelector;
+import edu.kit.kastel.vads.compiler.backend.liveness.InterferenceGraph;
 import edu.kit.kastel.vads.compiler.backend.liveness.LivenessAnalyzer;
+import edu.kit.kastel.vads.compiler.backend.regalloc.RegisterAllocator;
 import edu.kit.kastel.vads.compiler.ir.IrGraph;
 import edu.kit.kastel.vads.compiler.ir.SsaTranslation;
 import edu.kit.kastel.vads.compiler.ir.optimize.LocalValueNumbering;
@@ -58,6 +60,8 @@ public class Main {
         InstructionSelector is = new InstructionSelector();
         Instruction[] instructions = is.performIS(graphs).toArray(Instruction[]::new);
         instructions = LivenessAnalyzer.performLA(instructions);
+        InterferenceGraph graph = LivenessAnalyzer.generateInterferenceGraph(instructions, is.ALL_TREGS);
+        RegisterAllocator.performRegisterAllocation(graph);
 
         StringBuilder sbDebug = new StringBuilder(), sb = new StringBuilder();
 

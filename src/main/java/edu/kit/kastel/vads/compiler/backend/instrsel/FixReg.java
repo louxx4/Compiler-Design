@@ -13,4 +13,9 @@ public class FixReg extends Parameter {
         return "%" + name;
     }
 
+    @Override
+    public boolean isSpilled() {
+        return false;
+    }
+
 }
