@@ -114,6 +114,7 @@ public class InstructionSelector {
                 ins = new Instruction(INSTR_COUNTER++, 
                     "add", res, new Immediate(children.val_l));
                 ins.def(res);
+                ins.use(res);
                 builder.add(ins); 
             }
             case CONST_RIGHT -> { 
@@ -121,6 +122,7 @@ public class InstructionSelector {
                 ins = new Instruction(INSTR_COUNTER++, 
                     "add", res, new Immediate(children.val_r));
                 ins.def(res);
+                ins.use(res);
                 builder.add(ins);
             }
             default -> {
@@ -129,6 +131,7 @@ public class InstructionSelector {
                 ins = new Instruction(INSTR_COUNTER++, "add", res, t);
                 ins.def(res);
                 ins.use(t);
+                ins.use(res);
                 builder.add(ins);
             }
         }
@@ -162,6 +165,7 @@ public class InstructionSelector {
                     "sub", res, t); // res = res - t 
                 ins.def(res);
                 ins.use(t);
+                ins.use(res);
                 builder.add(ins); 
             }
             case CONST_RIGHT -> { 
@@ -169,6 +173,7 @@ public class InstructionSelector {
                 ins = new Instruction(INSTR_COUNTER++, 
                     "sub", res, new Immediate(children.val_r)); // res = res - imm
                 ins.def(res);
+                ins.use(res);
                 builder.add(ins);
             }
             default -> {
@@ -177,6 +182,7 @@ public class InstructionSelector {
                 ins = new Instruction(INSTR_COUNTER++, "sub", res, t);
                 ins.def(res);
                 ins.use(t);
+                ins.use(res);
                 builder.add(ins);
             }
         }
@@ -214,6 +220,7 @@ public class InstructionSelector {
                     ins = new Instruction(INSTR_COUNTER++, 
                         "imul", res, new Immediate(children.val_l));
                     ins.def(res);
+                    ins.use(res);
                     builder.add(ins); 
                 }
             }
@@ -232,6 +239,7 @@ public class InstructionSelector {
                     ins = new Instruction(INSTR_COUNTER++, 
                         "imul", res, new Immediate(children.val_r));
                     ins.def(res);
+                    ins.use(res);
                     builder.add(ins); 
                 }
             }
@@ -241,6 +249,7 @@ public class InstructionSelector {
                 ins = new Instruction(INSTR_COUNTER++, "imul", res, t);
                 ins.def(res);
                 ins.use(t);
+                ins.use(res);
                 builder.add(ins);
             }
         }

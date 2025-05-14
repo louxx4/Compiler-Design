@@ -1,7 +1,6 @@
-0: mov 100, %r12              {live: }
-1: mov 5, %cl                 {live: %r12}
-2: shl %r12                   {live: %r12}
-3: mov 40, %r12               {live: }
-4: add %r12, %r12             {live: %r12}
-5: mov %rax, %r12             {live: %r12}
-6: ret                        {live: }
+0: mov 100, %t0               {live: }
+1: imul %t0, 10               {live: %t0}
+2: mov 40, %t1                {live: %t0}
+3: add %t0, %t1               {live: %t1,%t0}
+4: mov %rax, %t0              {live: %t0}
+5: ret                        {live: }

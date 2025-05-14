@@ -46,14 +46,14 @@ public final class Instruction<S extends Parameter,T extends Parameter> {
         line += switch(this.parameterCount) {
                     case 0  -> operation;
                     case 1  -> operation + " " + 
-                        (left == null ? "null" : left.print());
+                        (left == null ? "null" : left.print(debugMode));
                     default -> operation + " " + 
-                        (left == null ? "null" : left.print()) + ", " + 
-                        (right == null ? "null" : right.print());
+                        (left == null ? "null" : left.print(debugMode)) + ", " + 
+                        (right == null ? "null" : right.print(debugMode));
                 };
         String ident = " ".repeat(30 - line.length());
         return line + (debugMode ? ident + "{live: " + 
-            getLive().stream().map(t -> t.print()).collect(Collectors.joining(",")) + "}" : "");
+            getLive().stream().map(t -> t.print(debugMode)).collect(Collectors.joining(",")) + "}" : "");
     }
 
     private static String getSpillingInstruction(Parameter t, String register) {

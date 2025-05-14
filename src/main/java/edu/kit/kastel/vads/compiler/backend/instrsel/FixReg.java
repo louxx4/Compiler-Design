@@ -9,8 +9,8 @@ public class FixReg extends Parameter {
     }
 
     @Override
-    public String print() {
-        return "%" + name;
+    public String print(boolean debug) {
+        return "%" + this.name;
     }
 
     @Override

@@ -12,8 +12,8 @@ public class TempReg extends Parameter {
     }
 
     @Override
-    public String print() {
-        return "%" + this.register.name;
+    public String print(boolean debug) {
+        return "%" + (debug ? "t" + this.id : this.register.name);
     }
 
     public void setRegister(Register register) {
