@@ -71,7 +71,7 @@ public class InstructionSelector {
             case ConstIntNode c -> { 
                 res = newTempReg();
                 ins = new Instruction(INSTR_COUNTER++, 
-                    "mov", res, new Immediate(c.value()));
+                    "mov", new Immediate(c.value()), res);
                 ins.def(res);
                 builder.add(ins); 
             }
@@ -81,7 +81,7 @@ public class InstructionSelector {
                     case ConstIntNode c2 -> {
                         res = newTempReg();
                         ins = new Instruction(INSTR_COUNTER++, 
-                            "mov", res, new Immediate(c2.value()));
+                            "mov", new Immediate(c2.value()), res);
                         ins.def(res);
                         builder.add(ins);
                     }
@@ -105,7 +105,7 @@ public class InstructionSelector {
             case CONST_CONST -> {
                 res = newTempReg();
                 ins = new Instruction(INSTR_COUNTER++, 
-                    "mov", res, new Immediate(children.val_l + children.val_r));
+                    "mov", new Immediate(children.val_l + children.val_r), res);
                 ins.def(res);
                 builder.add(ins);
             }
@@ -147,7 +147,7 @@ public class InstructionSelector {
             case CONST_CONST -> {
                 res = newTempReg();
                 ins = new Instruction(INSTR_COUNTER++, 
-                    "mov", res, new Immediate(children.val_l - children.val_r));
+                    "mov", new Immediate(children.val_l - children.val_r), res);
                 ins.def(res);
                 builder.add(ins);
             }
@@ -155,7 +155,7 @@ public class InstructionSelector {
                 res = newTempReg();
                 TempReg t = maximalMunch(right, builder); // t <- right
                 ins = new Instruction(INSTR_COUNTER++, 
-                    "mov", res, new Immediate(children.val_l)); // res <- imm
+                    "mov", new Immediate(children.val_l), res); // res <- imm
                 ins.def(res);
                 builder.add(ins);
                 ins = new Instruction(INSTR_COUNTER++, 
@@ -195,7 +195,7 @@ public class InstructionSelector {
             case CONST_CONST -> {
                 res = newTempReg();
                 ins = new Instruction(INSTR_COUNTER++, 
-                    "mov", res, new Immediate(children.val_l * children.val_r));
+                    "mov", new Immediate(children.val_l * children.val_r), res);
                 ins.def(res);
                 builder.add(ins);
             }
@@ -203,7 +203,8 @@ public class InstructionSelector {
                 res = maximalMunch(right, builder);
                 if(children.val_l % 2 == 0) {
                     //optimization: << instead of * (if imm is a power of 2)
-                    builder.add(new Instruction(INSTR_COUNTER++, "mov", new FixReg("cl"), new Immediate(children.val_l / 2)));
+                    builder.add(new Instruction(INSTR_COUNTER++, 
+                        "mov", new Immediate(children.val_l / 2), new FixReg("cl")));
                     ins = new Instruction(INSTR_COUNTER++, 
                         "shl", res);
                     ins.def(res);
@@ -220,7 +221,8 @@ public class InstructionSelector {
                 res = maximalMunch(left, builder);
                 if(children.val_r % 2 == 0) {
                     //optimization: << instead of * (if imm is a power of 2)
-                    builder.add(new Instruction(INSTR_COUNTER++, "mov", new FixReg("cl"), new Immediate(children.val_r / 2)));
+                    builder.add(new Instruction(INSTR_COUNTER++, 
+                        "mov", new Immediate(children.val_r / 2), new FixReg("cl")));
                     ins = new Instruction(INSTR_COUNTER++, 
                         "shl", res);
                     ins.def(res);
@@ -256,33 +258,33 @@ public class InstructionSelector {
         switch(children.pattern) {
             case CONST_CONST -> {
                 ins = new Instruction(INSTR_COUNTER++, 
-                    "mov", res, new Immediate(children.val_l % children.val_r));
+                    "mov", new Immediate(children.val_l % children.val_r), res);
                 ins.def(res);
                 builder.add(ins);
             }
             case CONST_LEFT -> {
                 TempReg t = maximalMunch(right, builder);
                 builder.add(new Instruction(INSTR_COUNTER++, 
-                    "mov", new FixReg("eax"), new Immediate(children.val_l))); //move l to %eax
+                    "mov", new Immediate(children.val_l), new FixReg("eax"))); //move l to %eax
                 ins = new Instruction(INSTR_COUNTER++,
                     "idiv", t);
                 ins.use(t);
                 builder.add(ins); //divide %eax by r
                 ins = new Instruction(INSTR_COUNTER++, 
-                    "mov", res, new FixReg("edx"));
+                    "mov", new FixReg("edx"), res);
                 ins.def(res);
                 builder.add(ins); //get remainder from %edx
             }
             case CONST_RIGHT -> {
                 TempReg t = maximalMunch(left, builder);
                 ins = new Instruction(INSTR_COUNTER++, 
-                    "mov", new FixReg("eax"), t);
+                    "mov", t, new FixReg("eax"));
                 ins.use(t);
                 builder.add(ins); //move l to %eax
                 builder.add(new Instruction(INSTR_COUNTER++, 
                     "idiv", new Immediate(children.val_r))); //divide %eax by r
                 ins = new Instruction(INSTR_COUNTER++, 
-                    "mov", res, new FixReg("edx"));
+                    "mov", new FixReg("edx"), res);
                 ins.def(res);
                 builder.add(ins); //get remainder from %edx
             }
@@ -290,7 +292,7 @@ public class InstructionSelector {
                 TempReg t1 = maximalMunch(left, builder);
                 TempReg t2 = maximalMunch(right, builder);
                 ins = new Instruction(INSTR_COUNTER++, 
-                    "mov", new FixReg("eax"), t1);
+                    "mov", t1, new FixReg("eax"));
                 ins.use(t1);
                 builder.add(ins); //move l to %eax
                 ins = new Instruction(INSTR_COUNTER++, 
@@ -298,7 +300,7 @@ public class InstructionSelector {
                 ins.use(t2);
                 builder.add(ins); //divide %eax by r
                 ins = new Instruction(INSTR_COUNTER++, 
-                    "mov", res, new FixReg("edx"));
+                    "mov", new FixReg("edx"), res);
                 ins.def(res);
                 builder.add(ins); //get remainder from %edx
             }
@@ -317,33 +319,33 @@ public class InstructionSelector {
         switch(children.pattern) {
             case CONST_CONST -> {
                 ins = new Instruction(INSTR_COUNTER++, 
-                    "mov", res, new Immediate(children.val_l / children.val_r));
+                    "mov", new Immediate(children.val_l / children.val_r), res);
                 ins.def(res);
                 builder.add(ins);
             }
             case CONST_LEFT -> {
                 TempReg t = maximalMunch(right, builder);
                 builder.add(new Instruction(INSTR_COUNTER++, 
-                    "mov", new FixReg("eax"), new Immediate(children.val_l))); //move l to %eax
+                    "mov", new Immediate(children.val_l), new FixReg("eax"))); //move l to %eax
                 ins = new Instruction(INSTR_COUNTER++, 
                     "idiv", t);
                 ins.use(t);
                 builder.add(ins); //divide %eax by r
                 ins = new Instruction(INSTR_COUNTER++, 
-                    "mov", res, new FixReg("eax"));
+                    "mov", new FixReg("eax"), res);
                 ins.def(res);
                 builder.add(ins); //get quotient from %eax
             }
             case CONST_RIGHT -> {
                 TempReg t = maximalMunch(left, builder);
                 ins = new Instruction(INSTR_COUNTER++, 
-                    "mov", new FixReg("eax"), t);
+                    "mov", t, new FixReg("eax"));
                 ins.use(t);
                 builder.add(ins); //move l to %eax
                 builder.add(new Instruction(INSTR_COUNTER++, 
                     "idiv", new Immediate(children.val_r))); //divide %eax by r
                 ins = new Instruction(INSTR_COUNTER++, 
-                    "mov", res, new FixReg("eax"));
+                    "mov", new FixReg("eax"), res);
                 ins.def(res);
                 builder.add(ins); //get quotient from %eax
             }
@@ -351,7 +353,7 @@ public class InstructionSelector {
                 TempReg t1 = maximalMunch(left, builder);
                 TempReg t2 = maximalMunch(right, builder);
                 ins = new Instruction(INSTR_COUNTER++, 
-                    "mov", new FixReg("eax"), t1);
+                    "mov", t1, new FixReg("eax"));
                 ins.use(t1);
                 builder.add(ins); //move l to %eax
                 ins = new Instruction(INSTR_COUNTER++, 
@@ -359,7 +361,7 @@ public class InstructionSelector {
                 ins.use(t2);
                 builder.add(ins); //divide %eax by r
                 ins = new Instruction(INSTR_COUNTER++, 
-                    "mov", res, new FixReg("eax"));
+                    "mov", new FixReg("eax"), res);
                 ins.def(res);
                 builder.add(ins); //get quotient from %eax
             }
