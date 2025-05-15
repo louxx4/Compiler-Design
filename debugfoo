@@ -1,5 +1,15 @@
+0: mov 0(%rsp), %t0           (due to spilling)
 0: mov $100, %t0              {live: }
+0: mov %t0, 0(%rsp)           (due to spilling)
+1: mov -1(%rsp), %t1          (due to spilling)
 1: mov $40, %t1               {live: %t0}
+1: mov %t1, -1(%rsp)          (due to spilling)
+2: mov -1(%rsp), %t1          (due to spilling)
+2: mov 0(%rsp), %t0           (due to spilling)
 2: add %t1, %t0               {live: %t1,%t0}
+2: mov %t1, -1(%rsp)          (due to spilling)
+2: mov %t0, 0(%rsp)           (due to spilling)
+3: mov 0(%rsp), %t0           (due to spilling)
 3: mov %t0, %rax              {live: %t0}
+3: mov %t0, 0(%rsp)           (due to spilling)
 4: ret                        {live: }

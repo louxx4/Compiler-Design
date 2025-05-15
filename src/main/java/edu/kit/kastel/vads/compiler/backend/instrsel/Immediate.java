@@ -19,4 +19,9 @@ public class Immediate extends Parameter {
         return false;
     }
 
+    @Override
+    public void setSpillingRegister(String spillingRegister) {
+        //ignore
+    }
+
 }

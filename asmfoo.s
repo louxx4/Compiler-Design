@@ -9,8 +9,18 @@ movq %rax, %rdi
 movq $0x3C, %rax
 syscall
 _main:
-mov $100, %r12
-mov $40, %r13
-add %r13, %r12
-mov %r12, %rax
+mov 0(%rsp), %r11
+mov $100, %r11
+mov %r11, 0(%rsp)
+mov -1(%rsp), %r11
+mov $40, %r11
+mov %r11, -1(%rsp)
+mov -1(%rsp), %r10
+mov 0(%rsp), %r11
+add %r10, %r11
+mov %r10, -1(%rsp)
+mov %r11, 0(%rsp)
+mov 0(%rsp), %r10
+mov %r10, %rax
+mov %r10, 0(%rsp)
 ret

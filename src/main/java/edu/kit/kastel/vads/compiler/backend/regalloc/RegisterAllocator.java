@@ -1,6 +1,6 @@
 package edu.kit.kastel.vads.compiler.backend.regalloc;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.PriorityQueue;
@@ -11,8 +11,7 @@ import edu.kit.kastel.vads.compiler.backend.liveness.Node;
 
 public class RegisterAllocator {
 
-    public static List<String> AVAILABLE_REGS = Arrays.asList(
-        "r12", "r13", "r14", "r15");
+    public static List<String> AVAILABLE_REGS = new ArrayList<>(); //Arrays.asList("r12", "r13", "r14", "r15");
 
     public static String SPILLING_REG_1 = "r10";
     public static String SPILLING_REG_2 = "r11";
@@ -25,9 +24,9 @@ public class RegisterAllocator {
         Register[] colorToReg = new Register[highestColor + 1];
         for(int i = 0; i <= highestColor; i++){
             if(i < AVAILABLE_REGS.size()) {
-                colorToReg[i] = new Register(AVAILABLE_REGS.get(i), false);
+                colorToReg[i] = new Register(AVAILABLE_REGS.get(i));
             } else {
-                colorToReg[i] = new Register(stackOffset + "(%rsp)", true);
+                colorToReg[i] = new Register(stackOffset);
                 stackOffset--; //TODO: change offset by data length????
             }
         }

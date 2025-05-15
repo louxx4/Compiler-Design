@@ -13,7 +13,7 @@ public class TempReg extends Parameter {
 
     @Override
     public String print(boolean debug) {
-        return "%" + (debug ? "t" + this.id : this.register.name);
+        return "%" + (debug ? "t" + this.id : this.register.getName());
     }
 
     public void setRegister(Register register) {
@@ -23,5 +23,10 @@ public class TempReg extends Parameter {
     @Override
     public boolean isSpilled() {
         return this.register.isSpilled;
+    }
+    
+    @Override
+    public void setSpillingRegister(String spillingRegister) {
+        this.register.setName(spillingRegister);
     }
 }

@@ -6,4 +6,6 @@ public abstract class Parameter {
 
     public abstract boolean isSpilled();
 
+    public abstract void setSpillingRegister(String spillingRegister);
+
 }
