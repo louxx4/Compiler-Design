@@ -26,13 +26,13 @@ import edu.kit.kastel.vads.compiler.semantic.SemanticException;
 
 public class Main {
     public static void main(String[] args) throws IOException {
-        if (args.length != 3) {
-            System.err.println("Invalid arguments: Expected one input file and two output files");
+        if (args.length != 2) {
+            System.err.println("Invalid arguments: Expected one input file and one output file");
             System.exit(3);
         }
         Path input = Path.of(args[0]);
         Path output = Path.of(args[1]);
-        Path debugOutput = Path.of(args[2]);
+        Path debugOutput = Path.of("debugfoo");
         Path asmOutput = Path.of("asmfoo.s");
         ProgramTree program = lexAndParse(input);
         try {
@@ -60,8 +60,8 @@ public class Main {
         InstructionSelector is = new InstructionSelector();
         Instruction[] instructions = is.performIS(graphs).toArray(Instruction[]::new);
         instructions = LivenessAnalyzer.performLA(instructions);
-        InterferenceGraph graph = LivenessAnalyzer.generateInterferenceGraph(instructions, is.ALL_TREGS);
-        RegisterAllocator.performRegisterAllocation(graph);
+        InterferenceGraph interferenceGraph = LivenessAnalyzer.generateInterferenceGraph(instructions, is.ALL_TREGS);
+        RegisterAllocator.performRegisterAllocation(interferenceGraph);
 
         StringBuilder sbDebug = new StringBuilder(), sb = new StringBuilder();
 

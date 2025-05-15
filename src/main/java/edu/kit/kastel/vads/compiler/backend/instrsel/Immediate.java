@@ -11,7 +11,7 @@ public class Immediate extends Parameter {
 
     @Override
     public String print(boolean debug) {
-        return String.valueOf(this.value);
+        return "$" + this.value;
     }
 
     @Override

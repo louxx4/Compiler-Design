@@ -1,6 +1,5 @@
-0: mov 100, %t0               {live: }
-1: imul %t0, 10               {live: %t0}
-2: mov 40, %t1                {live: %t0}
-3: add %t0, %t1               {live: %t1,%t0}
-4: mov %rax, %t0              {live: %t0}
-5: ret                        {live: }
+0: mov $100, %t0              {live: }
+1: mov $40, %t1               {live: %t0}
+2: add %t1, %t0               {live: %t1,%t0}
+3: mov %t0, %rax              {live: %t0}
+4: ret                        {live: }

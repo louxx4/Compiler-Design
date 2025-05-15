@@ -58,11 +58,11 @@ public class LivenessAnalyzer {
 
         // add edges between variables, if their liveness overlaps
         for(Instruction ins : instructions) {
-            List<TempReg> live = (List<TempReg>) ins.getLive();
+            List<TempReg> live = (List<TempReg>) ins.getLive(); // variables that are live in this instruction
             for(int i = 0; i < live.size(); i++) {
                 int node = live.get(i).id;
-                for(int j = 0; j < live.size() && j != i; j++) {
-                    adjSet[node].add(live.get(j).id); // add neighbour
+                for(int j = 0; j < live.size(); j++) {
+                    if(j != i) adjSet[node].add(live.get(j).id); // add neighbour
                 }
             }
 

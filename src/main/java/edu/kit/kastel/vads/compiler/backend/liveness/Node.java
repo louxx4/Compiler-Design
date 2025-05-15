@@ -29,7 +29,7 @@ public class Node implements Comparable<Node> {
     }
 
     public boolean isColored() {
-        return (color == -1);
+        return (this.color != -1);
     }
 
     @Override

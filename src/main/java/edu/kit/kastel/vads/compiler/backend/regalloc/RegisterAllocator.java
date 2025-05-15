@@ -19,8 +19,9 @@ public class RegisterAllocator {
 
     public static void performRegisterAllocation(InterferenceGraph graph) {
         int highestColor = applyGreedyColoring(graph, getSEOrdering(graph));
-        int stackOffset = 0;
+        if(highestColor == -1) return; // no registers needed
         // map available registers to lowest colors, then spill to stack
+        int stackOffset = 0;
         Register[] colorToReg = new Register[highestColor + 1];
         for(int i = 0; i <= highestColor; i++){
             if(i < AVAILABLE_REGS.size()) {

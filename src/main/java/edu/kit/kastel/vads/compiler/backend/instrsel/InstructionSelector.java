@@ -27,7 +27,7 @@ public class InstructionSelector {
         for (IrGraph functionGraph : irGraphs) {
             // String funcName = functionGraph.name();
             TempReg funcResult = maximalMunch(functionGraph.endBlock().predecessor(0), builder);
-            Instruction ins = new Instruction(INSTR_COUNTER++, "mov", new FixReg("rax"), funcResult);
+            Instruction ins = new Instruction(INSTR_COUNTER++, "mov", funcResult, new FixReg("rax"));
             ins.use(funcResult);
             builder.add(ins);
             builder.add(new Instruction(INSTR_COUNTER++, "ret"));
@@ -112,7 +112,7 @@ public class InstructionSelector {
             case CONST_LEFT -> {
                 res = maximalMunch(right, builder);
                 ins = new Instruction(INSTR_COUNTER++, 
-                    "add", res, new Immediate(children.val_l));
+                    "add", new Immediate(children.val_l), res);
                 ins.def(res);
                 ins.use(res);
                 builder.add(ins); 
@@ -120,7 +120,7 @@ public class InstructionSelector {
             case CONST_RIGHT -> { 
                 res = maximalMunch(left, builder);
                 ins = new Instruction(INSTR_COUNTER++, 
-                    "add", res, new Immediate(children.val_r));
+                    "add", new Immediate(children.val_r), res);
                 ins.def(res);
                 ins.use(res);
                 builder.add(ins);
@@ -128,7 +128,7 @@ public class InstructionSelector {
             default -> {
                 res = maximalMunch(left, builder);
                 TempReg t = maximalMunch(right, builder);
-                ins = new Instruction(INSTR_COUNTER++, "add", res, t);
+                ins = new Instruction(INSTR_COUNTER++, "add", t, res);
                 ins.def(res);
                 ins.use(t);
                 ins.use(res);
@@ -162,7 +162,7 @@ public class InstructionSelector {
                 ins.def(res);
                 builder.add(ins);
                 ins = new Instruction(INSTR_COUNTER++, 
-                    "sub", res, t); // res = res - t 
+                    "sub", t, res); // res = res - t 
                 ins.def(res);
                 ins.use(t);
                 ins.use(res);
@@ -171,7 +171,7 @@ public class InstructionSelector {
             case CONST_RIGHT -> { 
                 res = maximalMunch(left, builder); // res <- left
                 ins = new Instruction(INSTR_COUNTER++, 
-                    "sub", res, new Immediate(children.val_r)); // res = res - imm
+                    "sub", new Immediate(children.val_r), res); // res = res - imm
                 ins.def(res);
                 ins.use(res);
                 builder.add(ins);
@@ -179,7 +179,7 @@ public class InstructionSelector {
             default -> {
                 res = maximalMunch(left, builder);
                 TempReg t = maximalMunch(right, builder);
-                ins = new Instruction(INSTR_COUNTER++, "sub", res, t);
+                ins = new Instruction(INSTR_COUNTER++, "sub", t, res);
                 ins.def(res);
                 ins.use(t);
                 ins.use(res);
@@ -218,7 +218,7 @@ public class InstructionSelector {
                     builder.add(ins); 
                 } else {
                     ins = new Instruction(INSTR_COUNTER++, 
-                        "imul", res, new Immediate(children.val_l));
+                        "imul", new Immediate(children.val_l), res);
                     ins.def(res);
                     ins.use(res);
                     builder.add(ins); 
@@ -237,7 +237,7 @@ public class InstructionSelector {
                     builder.add(ins); 
                 } else {
                     ins = new Instruction(INSTR_COUNTER++, 
-                        "imul", res, new Immediate(children.val_r));
+                        "imul", new Immediate(children.val_r), res);
                     ins.def(res);
                     ins.use(res);
                     builder.add(ins); 
@@ -246,7 +246,7 @@ public class InstructionSelector {
             default -> {
                 res = maximalMunch(left, builder);
                 TempReg t = maximalMunch(right, builder);
-                ins = new Instruction(INSTR_COUNTER++, "imul", res, t);
+                ins = new Instruction(INSTR_COUNTER++, "imul", t, res);
                 ins.def(res);
                 ins.use(t);
                 ins.use(res);
