@@ -1,6 +1,5 @@
 int main() {
-    int x = 10 * 3;
-    int y = 40 * 1;
-    int z = x + y;
-    return z;
+    int a = 3;
+    int b = 3;
+    return 42 / (a - b);
 }

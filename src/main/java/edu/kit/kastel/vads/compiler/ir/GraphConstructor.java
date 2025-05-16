@@ -1,5 +1,10 @@
 package edu.kit.kastel.vads.compiler.ir;
 
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
 import edu.kit.kastel.vads.compiler.ir.node.AddNode;
 import edu.kit.kastel.vads.compiler.ir.node.Block;
 import edu.kit.kastel.vads.compiler.ir.node.ConstIntNode;
@@ -15,11 +20,6 @@ import edu.kit.kastel.vads.compiler.ir.node.SubNode;
 import edu.kit.kastel.vads.compiler.ir.optimize.Optimizer;
 import edu.kit.kastel.vads.compiler.parser.symbol.Name;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-
 class GraphConstructor {
 
     private final Optimizer optimizer;
@@ -29,7 +29,7 @@ class GraphConstructor {
     private final Map<Block, Node> currentSideEffect = new HashMap<>();
     private final Map<Block, Phi> incompleteSideEffectPhis = new HashMap<>();
     private final Set<Block> sealedBlocks = new HashSet<>();
-    private Block currentBlock;
+    private final Block currentBlock;
 
     public GraphConstructor(Optimizer optimizer, String name) {
         this.optimizer = optimizer;

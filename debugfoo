@@ -1,17 +1,7 @@
-0: sub $16, %rsp              {live: }
-1: mov -8(%rsp), %t0          (due to spilling)
-1: mov $30, %t0               {live: }
-1: mov %t0, -8(%rsp)          (due to spilling)
-2: mov -16(%rsp), %t1         (due to spilling)
-2: mov $40, %t1               {live: %t0}
-2: mov %t1, -16(%rsp)         (due to spilling)
-3: mov -16(%rsp), %t1         (due to spilling)
-3: mov -8(%rsp), %t0          (due to spilling)
-3: add %t1, %t0               {live: %t1,%t0}
-3: mov %t1, -16(%rsp)         (due to spilling)
-3: mov %t0, -8(%rsp)          (due to spilling)
-4: mov -8(%rsp), %t0          (due to spilling)
-4: mov %t0, %rax              {live: %t0}
-4: mov %t0, -8(%rsp)          (due to spilling)
-5: add $16, %rsp              {live: }
-6: ret                        {live: }
+1: mov $0, %t1                {live: }
+2: mov $0, %rdx               {live: %t1}
+3: mov $42, %rax              {live: %t1}
+4: idiv %t1                   {live: %t1}
+5: mov %rax, %t0              {live: }
+6: mov %t0, %rax              {live: %t0}
+7: ret                        {live: }

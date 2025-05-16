@@ -9,20 +9,10 @@ movq %rax, %rdi
 movq $0x3C, %rax
 syscall
 _main:
-sub $16, %rsp
-mov -8(%rsp), %r11
-mov $30, %r11
-mov %r11, -8(%rsp)
-mov -16(%rsp), %r11
-mov $40, %r11
-mov %r11, -16(%rsp)
-mov -16(%rsp), %r10
-mov -8(%rsp), %r11
-add %r10, %r11
-mov %r10, -16(%rsp)
-mov %r11, -8(%rsp)
-mov -8(%rsp), %r10
-mov %r10, %rax
-mov %r10, -8(%rsp)
-add $16, %rsp
+mov $0, %r12
+mov $0, %rdx
+mov $42, %rax
+idiv %r12
+mov %rax, %r12
+mov %r12, %rax
 ret

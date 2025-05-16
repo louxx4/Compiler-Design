@@ -25,6 +25,7 @@ import edu.kit.kastel.vads.compiler.semantic.SemanticAnalysis;
 import edu.kit.kastel.vads.compiler.semantic.SemanticException;
 
 public class Main {
+    @SuppressWarnings("CallToPrintStackTrace")
     public static void main(String[] args) throws IOException {
         if (args.length != 2) {
             System.err.println("Invalid arguments: Expected one input file and one output file");
