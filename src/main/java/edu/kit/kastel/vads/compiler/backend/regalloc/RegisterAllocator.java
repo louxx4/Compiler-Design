@@ -1,6 +1,6 @@
 package edu.kit.kastel.vads.compiler.backend.regalloc;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.PriorityQueue;
@@ -11,29 +11,34 @@ import edu.kit.kastel.vads.compiler.backend.liveness.Node;
 
 public class RegisterAllocator {
 
-    public static List<String> AVAILABLE_REGS = new ArrayList<>(); //Arrays.asList("r12", "r13", "r14", "r15");
+    public static List<String> AVAILABLE_REGS = Arrays.asList("r12", "r13", "r14", "r15");
 
     public static String SPILLING_REG_1 = "r10";
     public static String SPILLING_REG_2 = "r11";
 
-    public static void performRegisterAllocation(InterferenceGraph graph) {
+    // Sets concrete registers / stack positions at the TempRegs.
+    // Returns the amount of spilled registers. 
+    public static int performRegisterAllocation(InterferenceGraph graph) {
         int highestColor = applyGreedyColoring(graph, getSEOrdering(graph));
-        if(highestColor == -1) return; // no registers needed
+        if(highestColor == -1) return 0; // no registers needed
         // map available registers to lowest colors, then spill to stack
-        int stackOffset = 0;
+        int stackOffset = -8;
+        int amountSpilled = 0;
         Register[] colorToReg = new Register[highestColor + 1];
         for(int i = 0; i <= highestColor; i++){
             if(i < AVAILABLE_REGS.size()) {
                 colorToReg[i] = new Register(AVAILABLE_REGS.get(i));
             } else {
                 colorToReg[i] = new Register(stackOffset);
-                stackOffset--; //TODO: change offset by data length????
+                stackOffset -= 8;
+                amountSpilled++;
             }
         }
         // set colors at nodes
         for(Node node : graph.nodes) {
             node.reg.setRegister(colorToReg[node.getColor()]);
         }
+        return amountSpilled;
     }
 
     // Calculates a simplical (S) elimination (E) ordering for 

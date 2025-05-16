@@ -17,7 +17,7 @@ import edu.kit.kastel.vads.compiler.ir.node.SubNode;
 public class InstructionSelector {
 
     private Integer REG_COUNTER = 0;
-    private Integer INSTR_COUNTER = 0;
+    private Integer INSTR_COUNTER = 1;
     public List<TempReg> ALL_TREGS = new ArrayList<>(); //holds all temporary registers (used for easier recalloc)
 
     // Creates a maximal munch cover of the IR tree.
@@ -30,9 +30,41 @@ public class InstructionSelector {
             Instruction ins = new Instruction(INSTR_COUNTER++, "mov", funcResult, new FixReg("rax"));
             ins.use(funcResult);
             builder.add(ins);
-            builder.add(new Instruction(INSTR_COUNTER++, "ret"));
         }
         return builder;
+    }
+
+    public void addFunctionPrologue(List<Instruction> instructions, int spilledRegs) {
+        // add stack allocation for spilled registers
+        if(spilledRegs > 0) {
+            instructions.addFirst(new Instruction(0, 
+                "sub", new Immediate(spilledRegs * 8), new FixReg("rsp")));
+        }
+    }
+
+    public void addFunctionEpilogue(List<Instruction> instructions, int spilledRegs) {
+        // add stack deallocation for spilled registers
+        if(spilledRegs > 0) {
+            instructions.addLast(new Instruction(INSTR_COUNTER++, 
+                "add", new Immediate(spilledRegs * 8), new FixReg("rsp")));
+        }
+        instructions.addLast(new Instruction(INSTR_COUNTER++, "ret"));
+    }
+
+    public static String getGlobalPrologue() {
+        return """
+        .global main
+        .global _main
+        .text
+        main:
+        call _main
+        # move the return value into the first argument for the syscall
+        movq %rax, %rdi
+        # move the exit syscall number into rax
+        movq $0x3C, %rax
+        syscall
+        _main:
+        """;
     }
 
     private TempReg newTempReg() {

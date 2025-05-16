@@ -58,31 +58,21 @@ public class Main {
 
         // TODO: generate assembly and invoke gcc instead of generating abstract assembly
         InstructionSelector is = new InstructionSelector();
-        Instruction[] instructions = is.performIS(graphs).toArray(Instruction[]::new);
-        instructions = LivenessAnalyzer.performLA(instructions);
+        List<Instruction> instructions = is.performIS(graphs);
+        LivenessAnalyzer.performLA(instructions.toArray(Instruction[]::new));
         InterferenceGraph interferenceGraph = LivenessAnalyzer.generateInterferenceGraph(instructions, is.ALL_TREGS);
-        RegisterAllocator.performRegisterAllocation(interferenceGraph);
+        int spilledRegs = RegisterAllocator.performRegisterAllocation(interferenceGraph);
+        is.addFunctionPrologue(instructions, spilledRegs);
+        is.addFunctionEpilogue(instructions, spilledRegs);
 
         StringBuilder sbDebug = new StringBuilder(), sb = new StringBuilder();
-
-        sb.append("""
-        .global main
-        .global _main
-        .text
-        main:
-        call _main
-        # move the return value into the first argument for the syscall
-        movq %rax, %rdi
-        # move the exit syscall number into rax
-        movq $0x3C, %rax
-        syscall
-        _main:
-        """);
+        sb.append(InstructionSelector.getGlobalPrologue());
 
         for(Instruction i : instructions) {
             sbDebug.append(i.print(true)).append("\n"); // debug output
             sb.append(i.print(false)).append("\n"); // real output
         }
+
         Files.writeString(debugOutput, sbDebug.toString());
         Files.writeString(asmOutput, sb.toString());
 

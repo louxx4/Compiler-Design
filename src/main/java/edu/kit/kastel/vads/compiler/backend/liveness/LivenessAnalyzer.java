@@ -9,7 +9,7 @@ import edu.kit.kastel.vads.compiler.backend.instrsel.TempReg;
 
 public class LivenessAnalyzer {
 
-    public static Instruction[] performLA(Instruction[] instructions) {
+    public static void performLA(Instruction[] instructions) {
         for (int i = instructions.length - 1; i >= 0; i--) {
             // use(l,t) -> live(l,t)
             instructions[i].live(instructions[i].getUse()); //apply rule K1
@@ -17,13 +17,13 @@ public class LivenessAnalyzer {
             if(i < instructions.length - 1)
                 instructions[i].succ(instructions[i+1]);
         }
-        return infereLiveness(instructions); //apply rule K2
+        infereLiveness(instructions); //apply rule K2
     }
 
     // Apply liveness inference rule (K2) to instructions until no change occurs.
     // After saturation all instructions hold their live variables (here: temporary registers).
-    public static Instruction[] infereLiveness(Instruction[] instructions) {
-        boolean saturated = false;
+    public static void infereLiveness(Instruction[] instructions) {
+        boolean saturated;
         do {
             saturated = true;
             for (Instruction l : instructions) {
@@ -38,12 +38,10 @@ public class LivenessAnalyzer {
                 }
             }
         } while (!saturated);
-
-        return instructions;
     }
 
     // Generates the inference graph out of the liveness information set on an instruction sequence.
-    public static InterferenceGraph generateInterferenceGraph(Instruction[] instructions, List<TempReg> tempRegisters) {
+    public static InterferenceGraph generateInterferenceGraph(List<Instruction> instructions, List<TempReg> tempRegisters) {
         // generate a node for each temporary register
         Node[] allNodes = new Node[tempRegisters.size()];
         for(TempReg t : tempRegisters) {
