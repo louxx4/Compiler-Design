@@ -57,7 +57,7 @@ public class Main {
             }
         }
 
-        // TODO: generate assembly and invoke gcc instead of generating abstract assembly
+        // generate assembly
         InstructionSelector is = new InstructionSelector();
         List<Instruction> instructions = is.performIS(graphs);
         LivenessAnalyzer.performLA(instructions.toArray(Instruction[]::new));
@@ -77,11 +77,15 @@ public class Main {
         Files.writeString(debugOutput, sbDebug.toString());
         Files.writeString(asmOutput, sb.toString());
 
-        // template output
+        // invoke scc
+        Runtime.getRuntime().exec("gcc asmfoo.s -o " + output);
+
+        // template (abstract assembly) output
         //String s = new CodeGenerator().generateCode(graphs);
         //Files.writeString(output, s);
     }
 
+    @SuppressWarnings("CallToPrintStackTrace")
     private static ProgramTree lexAndParse(Path input) throws IOException {
         try {
             Lexer lexer = Lexer.forString(Files.readString(input));

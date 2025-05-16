@@ -9,10 +9,6 @@ movq %rax, %rdi
 movq $0x3C, %rax
 syscall
 _main:
-mov $0, %r12
-mov $0, %rdx
-mov $42, %rax
-idiv %r12
-mov %rax, %r12
+mov $14, %r12
 mov %r12, %rax
 ret
