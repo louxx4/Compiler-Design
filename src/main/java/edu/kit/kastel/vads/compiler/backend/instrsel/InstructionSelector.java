@@ -10,6 +10,7 @@ import edu.kit.kastel.vads.compiler.ir.node.DivNode;
 import edu.kit.kastel.vads.compiler.ir.node.ModNode;
 import edu.kit.kastel.vads.compiler.ir.node.MulNode;
 import edu.kit.kastel.vads.compiler.ir.node.Node;
+import edu.kit.kastel.vads.compiler.ir.node.ProjNode;
 import edu.kit.kastel.vads.compiler.ir.node.ReturnNode;
 import edu.kit.kastel.vads.compiler.ir.node.SubNode;
 import edu.kit.kastel.vads.compiler.ir.util.NodeSupport;
@@ -46,6 +47,7 @@ public class InstructionSelector {
             case ModNode mod -> res = handleModNode(mod, builder);
             case DivNode div -> res = handleDivNode(div, builder);
             case ReturnNode ret -> res = handleReturnNode(ret, builder);
+            case ProjNode proj -> res = handleProjNode(proj, builder);
             default -> {
                 System.out.println("Instruction selection failed: Node was of type " + 
                     node.toString());
@@ -112,6 +114,10 @@ public class InstructionSelector {
         }
 
         return res;
+    }
+
+    private TempReg handleProjNode(ProjNode proj, List<Instruction> builder) {
+        return maximalMunch(proj.predecessor(0), builder);
     }
 
     private TempReg handleAddNode(AddNode add, List<Instruction> builder) {
@@ -229,10 +235,8 @@ public class InstructionSelector {
                 res = maximalMunch(right, builder);
                 if((Math.log(children.val_l) / Math.log(2)) % 1 == 0) {
                     //optimization: << instead of * (if imm is a power of 2)
-                    builder.add(new Instruction(INSTR_COUNTER++, 
-                        "mov", new Immediate((int) (Math.log(children.val_l) / Math.log(2))), new FixReg("cl")));
                     ins = new Instruction(INSTR_COUNTER++, 
-                        "shl", res);
+                        "shl", new Immediate((int) (Math.log(children.val_l) / Math.log(2))), res);
                     ins.def(res);
                     ins.use(res);
                     builder.add(ins); 
@@ -248,10 +252,8 @@ public class InstructionSelector {
                 res = maximalMunch(left, builder);
                 if((Math.log(children.val_r) / Math.log(2)) % 1 == 0) {
                     //optimization: << instead of * (if imm is a power of 2)
-                    builder.add(new Instruction(INSTR_COUNTER++, 
-                        "mov", new Immediate((int) (Math.log(children.val_r) / Math.log(2))), new FixReg("cl")));
                     ins = new Instruction(INSTR_COUNTER++, 
-                        "shl", res);
+                        "shl", new Immediate((int) (Math.log(children.val_r) / Math.log(2))), res);
                     ins.def(res);
                     ins.use(res);
                     builder.add(ins); 

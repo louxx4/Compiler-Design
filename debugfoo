@@ -1,3 +1,99 @@
-1: mov $14, %t0               {live: }
-2: mov %t0, %rax              {live: %t0}
-3: ret                        {live: }
+0: sub $8, %rsp               {live: }
+1: mov $0, %rdx               {live: }
+2: mov $42, %rax              {live: }
+3: mov $4, %t0                {live: }
+4: idiv %t0                   {live: %t0}
+5: mov %rdx, %t0              {live: }
+6: shl $2, %t0                {live: %t0}
+7: mov $0, %rdx               {live: %t0}
+8: mov $42, %rax              {live: %t0}
+9: mov $4, %t2                {live: %t0}
+10: idiv %t2                  {live: %t2,%t0}
+11: mov %rdx, %t2             {live: %t0}
+12: shl $2, %t2               {live: %t2,%t0}
+13: mov $0, %t1               {live: %t2,%t0}
+14: sub %t2, %t1              {live: %t2,%t1,%t0}
+15: imul %t1, %t0             {live: %t1,%t0}
+16: mov $0, %rdx              {live: %t0}
+17: mov $42, %rax             {live: %t0}
+18: mov $4, %t4               {live: %t0}
+19: idiv %t4                  {live: %t4,%t0}
+20: mov %rdx, %t4             {live: %t0}
+21: shl $2, %t4               {live: %t4,%t0}
+22: mov $0, %rdx              {live: %t4,%t0}
+23: mov $42, %rax             {live: %t4,%t0}
+24: mov $4, %t6               {live: %t4,%t0}
+25: idiv %t6                  {live: %t6,%t4,%t0}
+26: mov %rdx, %t6             {live: %t4,%t0}
+27: shl $2, %t6               {live: %t6,%t4,%t0}
+28: mov $0, %t5               {live: %t6,%t4,%t0}
+29: sub %t6, %t5              {live: %t6,%t5,%t4,%t0}
+30: imul %t5, %t4             {live: %t5,%t4,%t0}
+31: mov -8(%rsp), %t3         (due to spilling)
+31: mov $0, %t3               {live: %t4,%t0}
+31: mov %t3, -8(%rsp)         (due to spilling)
+32: mov -8(%rsp), %t3         (due to spilling)
+32: sub %t4, %t3              {live: %t4,%t3,%t0}
+32: mov %t3, -8(%rsp)         (due to spilling)
+33: mov $0, %rdx              {live: %t3,%t0}
+34: mov $42, %rax             {live: %t3,%t0}
+35: mov $4, %t7               {live: %t3,%t0}
+36: idiv %t7                  {live: %t7,%t3,%t0}
+37: mov %rdx, %t7             {live: %t3,%t0}
+38: shl $2, %t7               {live: %t7,%t3,%t0}
+39: mov $0, %rdx              {live: %t7,%t3,%t0}
+40: mov $42, %rax             {live: %t7,%t3,%t0}
+41: mov $4, %t9               {live: %t7,%t3,%t0}
+42: idiv %t9                  {live: %t9,%t7,%t3,%t0}
+43: mov %rdx, %t9             {live: %t7,%t3,%t0}
+44: shl $2, %t9               {live: %t9,%t7,%t3,%t0}
+45: mov $0, %t8               {live: %t9,%t7,%t3,%t0}
+46: sub %t9, %t8              {live: %t9,%t8,%t7,%t3,%t0}
+47: imul %t8, %t7             {live: %t8,%t7,%t3,%t0}
+48: mov -8(%rsp), %t3         (due to spilling)
+48: add %t7, %t3              {live: %t7,%t3,%t0}
+48: mov %t3, -8(%rsp)         (due to spilling)
+49: mov $0, %rdx              {live: %t3,%t0}
+50: mov $42, %rax             {live: %t3,%t0}
+51: mov $4, %t10              {live: %t3,%t0}
+52: idiv %t10                 {live: %t10,%t3,%t0}
+53: mov %rdx, %t10            {live: %t3,%t0}
+54: shl $2, %t10              {live: %t10,%t3,%t0}
+55: mov $0, %rdx              {live: %t10,%t3,%t0}
+56: mov $42, %rax             {live: %t10,%t3,%t0}
+57: mov $4, %t12              {live: %t10,%t3,%t0}
+58: idiv %t12                 {live: %t12,%t10,%t3,%t0}
+59: mov %rdx, %t12            {live: %t10,%t3,%t0}
+60: shl $2, %t12              {live: %t12,%t10,%t3,%t0}
+61: mov $0, %t11              {live: %t12,%t10,%t3,%t0}
+62: sub %t12, %t11            {live: %t12,%t11,%t10,%t3,%t0}
+63: imul %t11, %t10           {live: %t11,%t10,%t3,%t0}
+64: mov -8(%rsp), %t3         (due to spilling)
+64: sub %t10, %t3             {live: %t10,%t3,%t0}
+64: mov %t3, -8(%rsp)         (due to spilling)
+65: mov $0, %rdx              {live: %t3,%t0}
+66: mov $42, %rax             {live: %t3,%t0}
+67: mov $4, %t13              {live: %t3,%t0}
+68: idiv %t13                 {live: %t13,%t3,%t0}
+69: mov %rdx, %t13            {live: %t3,%t0}
+70: shl $2, %t13              {live: %t13,%t3,%t0}
+71: mov $0, %rdx              {live: %t13,%t3,%t0}
+72: mov $42, %rax             {live: %t13,%t3,%t0}
+73: mov $4, %t15              {live: %t13,%t3,%t0}
+74: idiv %t15                 {live: %t15,%t13,%t3,%t0}
+75: mov %rdx, %t15            {live: %t13,%t3,%t0}
+76: shl $2, %t15              {live: %t15,%t13,%t3,%t0}
+77: mov $0, %t14              {live: %t15,%t13,%t3,%t0}
+78: sub %t15, %t14            {live: %t15,%t14,%t13,%t3,%t0}
+79: imul %t14, %t13           {live: %t14,%t13,%t3,%t0}
+80: mov -8(%rsp), %t3         (due to spilling)
+80: sub %t13, %t3             {live: %t13,%t3,%t0}
+80: mov %t3, -8(%rsp)         (due to spilling)
+81: mov -8(%rsp), %t3         (due to spilling)
+81: add %t3, %t0              {live: %t3,%t0}
+81: mov %t3, -8(%rsp)         (due to spilling)
+82: add $15, %t0              {live: %t0}
+83: sub $37, %t0              {live: %t0}
+84: mov %t0, %rax             {live: %t0}
+85: add $8, %rsp              {live: }
+86: ret                       {live: }
