@@ -13,7 +13,7 @@ public class TempReg extends Parameter {
 
     @Override
     public String print(boolean debug) {
-        return "%" + (debug ? "t" + this.id : this.register.getName());
+        return "%" + (debug ? "t" + this.id : this.register.getName() + "d");
     }
 
     public void setRegister(Register register) {

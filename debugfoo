@@ -1,3 +1,10 @@
-1: mov $0, %t0                {live: }
-2: mov %t0, %rax              {live: %t0}
-3: ret                        {live: }
+1: mov $-2147483648, %t1      {live: }
+2: mov $-1, %t2               {live: %t1}
+3: mov %t1, %eax              {live: %t1,%t2}
+4: cltq                       {live: %t2}
+5: cqto                       {live: %t2}
+6: idiv %t2                   {live: %t2}
+7: mov %eax, %t0              {live: }
+8: mov %t0, %eax              {live: %t0}
+9: cltq                       {live: }
+10: ret                       {live: }

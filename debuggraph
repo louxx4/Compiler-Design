@@ -1,4 +1,4 @@
-digraph "pain" {
+digraph "main" {
     compound=true;
     layout=dot;
     node [shape=box];
@@ -7,19 +7,35 @@ digraph "pain" {
 
     subgraph cluster_0 {
         c_0 [width=0, height=0, fixedsize=true, style=invis];
-        1 [label="Return", tooltip="source span: [2:4|2:12]"];
-        2 [label="ConstInt [0]", tooltip="source span: [2:11|2:12]"];
-        3 [label="Start", tooltip="source span: [0:0|3:1]"];
-        4 [label="Proj SIDE_EFFECT", tooltip="source span: [0:0|3:1]"];
+        1 [label="Proj SIDE_EFFECT", tooltip="source span: [0:0|2:1]"];
+        2 [label="Proj RESULT", tooltip="source span: [1:9|1:25]"];
+        3 [label="Proj SIDE_EFFECT", tooltip="source span: [1:9|1:25]"];
+        4 [label="Div", tooltip="source span: [1:9|1:25]"];
+        5 [label="Sub", tooltip="source span: [1:9|1:20]"];
+        6 [label="Return", tooltip="source span: [1:2|1:25]"];
+        7 [label="ConstInt [0]", tooltip="source span: [1:9|1:20]"];
+        8 [label="Sub", tooltip="source span: [1:23|1:25]"];
+        9 [label="ConstInt [1]", tooltip="source span: [1:24|1:25]"];
+        10 [label="Start", tooltip="source span: [0:0|2:1]"];
+        11 [label="ConstInt [-2147483648]", tooltip="source span: [1:10|1:20]"];
     }
 
-    subgraph cluster_5 {
-        c_5 [width=0, height=0, fixedsize=true, style=invis];
+    subgraph cluster_12 {
+        c_12 [width=0, height=0, fixedsize=true, style=invis];
         label=End;
     }
 
-    1 -> c_5 [label=0, lhead=cluster_5];
-    4 -> 1 [label=0];
-    3 -> 4 [label=0];
-    2 -> 1 [label=1];
+    6 -> c_12 [label=0, lhead=cluster_12];
+    3 -> 6 [label=0];
+    4 -> 3 [label=0];
+    5 -> 4 [label=0];
+    7 -> 5 [label=0];
+    11 -> 5 [label=1];
+    8 -> 4 [label=1];
+    7 -> 8 [label=0];
+    9 -> 8 [label=1];
+    1 -> 4 [label=2];
+    10 -> 1 [label=0];
+    2 -> 6 [label=1];
+    4 -> 2 [label=0];
 }

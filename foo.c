@@ -1,4 +1,3 @@
-int pain() {
-    // Main method not prominent
-    return 0;
+int main() {
+  return -2147483648 / -1;
 }
