@@ -1,6 +1,4 @@
-int main() {
-  int a;
-  int b = -10;
-  a = b % 4;
-  return a;
+int pain() {
+    // Main method not prominent
+    return 0;
 }
