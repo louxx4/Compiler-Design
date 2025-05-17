@@ -14,6 +14,7 @@ import edu.kit.kastel.vads.compiler.backend.regalloc.RegisterAllocator;
 import edu.kit.kastel.vads.compiler.ir.IrGraph;
 import edu.kit.kastel.vads.compiler.ir.SsaTranslation;
 import edu.kit.kastel.vads.compiler.ir.optimize.LocalValueNumbering;
+import edu.kit.kastel.vads.compiler.ir.util.GraphVizPrinter;
 import edu.kit.kastel.vads.compiler.ir.util.YCompPrinter;
 import edu.kit.kastel.vads.compiler.lexer.Lexer;
 import edu.kit.kastel.vads.compiler.parser.ParseException;
@@ -35,6 +36,7 @@ public class Main {
         Path output = Path.of(args[1]);
         Path debugOutput = Path.of("debugfoo");
         Path asmOutput = Path.of("asmfoo.s");
+        Path graphOutput = Path.of("debuggraph");
         ProgramTree program = lexAndParse(input);
         try {
             new SemanticAnalysis(program).analyze();
@@ -47,6 +49,10 @@ public class Main {
         for (FunctionTree function : program.topLevelTrees()) {
             SsaTranslation translation = new SsaTranslation(function, new LocalValueNumbering());
             graphs.add(translation.translate());
+        }
+
+        for (IrGraph graph : graphs) {
+            Files.writeString(graphOutput, GraphVizPrinter.print(graph));
         }
 
         if ("vcg".equals(System.getenv("DUMP_GRAPHS")) || "vcg".equals(System.getProperty("dumpGraphs"))) {

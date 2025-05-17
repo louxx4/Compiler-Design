@@ -12,6 +12,7 @@ import edu.kit.kastel.vads.compiler.ir.node.MulNode;
 import edu.kit.kastel.vads.compiler.ir.node.Node;
 import edu.kit.kastel.vads.compiler.ir.node.ProjNode;
 import edu.kit.kastel.vads.compiler.ir.node.ReturnNode;
+import edu.kit.kastel.vads.compiler.ir.node.StartNode;
 import edu.kit.kastel.vads.compiler.ir.node.SubNode;
 import edu.kit.kastel.vads.compiler.ir.util.NodeSupport;
 
@@ -98,11 +99,16 @@ public class InstructionSelector {
     }
 
     private TempReg handleReturnNode(ReturnNode ret, List<Instruction> builder) {
-        Node node = NodeSupport.predecessorSkipProj(ret, ReturnNode.RESULT);
+        Node resNode = NodeSupport.predecessorSkipProj(ret, ReturnNode.RESULT);
+        Node sideEffect = NodeSupport.predecessorSkipProj(ret, ReturnNode.SIDE_EFFECT);
         TempReg res;
         Instruction ins;
+        
+        if(!(sideEffect.equals(resNode) || sideEffect instanceof StartNode)) {
+            maximalMunch(sideEffect, builder); //ignore result (only trigger side effect)
+        }
 
-        switch(node) {
+        switch(resNode) {
             case ConstIntNode c -> { 
                 res = newTempReg();
                 ins = new Instruction(INSTR_COUNTER++, 
@@ -110,19 +116,19 @@ public class InstructionSelector {
                 ins.def(res);
                 builder.add(ins); 
             }
-            default -> res = maximalMunch(node, builder);
+            default -> res = maximalMunch(resNode, builder);
         }
 
         return res;
     }
 
     private TempReg handleProjNode(ProjNode proj, List<Instruction> builder) {
-        return maximalMunch(proj.predecessor(0), builder);
+        return maximalMunch(proj.predecessor(ProjNode.IN), builder);
     }
 
     private TempReg handleAddNode(AddNode add, List<Instruction> builder) {
-        Node left = add.predecessor(0);
-        Node right = add.predecessor(1);
+        Node left = add.predecessor(AddNode.LEFT);
+        Node right = add.predecessor(AddNode.RIGHT);
         Pair children = new Pair(left, right);
         TempReg res;
         Instruction ins;
@@ -166,8 +172,8 @@ public class InstructionSelector {
     }
 
     private TempReg handleSubNode(SubNode sub, List<Instruction> builder) {
-        Node left = sub.predecessor(0);
-        Node right = sub.predecessor(1);
+        Node left = sub.predecessor(SubNode.LEFT);
+        Node right = sub.predecessor(SubNode.RIGHT);
         Pair children = new Pair(left, right);
         TempReg res;
         Instruction ins;
@@ -217,8 +223,8 @@ public class InstructionSelector {
     }
 
     private TempReg handleMulNode(MulNode mul, List<Instruction> builder) {
-        Node left = mul.predecessor(0);
-        Node right = mul.predecessor(1);
+        Node left = mul.predecessor(MulNode.LEFT);
+        Node right = mul.predecessor(MulNode.RIGHT);
         Pair children = new Pair(left, right);
         TempReg res;
         Instruction ins;
@@ -280,29 +286,35 @@ public class InstructionSelector {
     }
 
     private TempReg handleModNode(ModNode mod, List<Instruction> builder) {
-        Node left = mod.predecessor(0);
-        Node right = mod.predecessor(1);
+        Node left = mod.predecessor(ModNode.LEFT);
+        Node right = mod.predecessor(ModNode.RIGHT);
+        Node sideEffect = NodeSupport.predecessorSkipProj(mod, ModNode.SIDE_EFFECT);
         Pair children = new Pair(left, right);
         TempReg res = newTempReg();
         Instruction ins;
+
+        if(!(sideEffect.equals(left) || sideEffect.equals(right) || sideEffect instanceof StartNode)){ 
+            maximalMunch(sideEffect, builder); //ignore result (only trigger side effect)
+        }
 
         switch(children.pattern) {
             case CONST_CONST -> {
                 builder.add(new Instruction(INSTR_COUNTER++, 
                     "mov", new Immediate(children.val_l), new FixReg("rax"))); //move l to %rax
-                ins = new Instruction(INSTR_COUNTER++, "mov", new Immediate(children.val_r), res);
+                ins = new Instruction(INSTR_COUNTER++, 
+                    "mov", new Immediate(children.val_r), res); //move r to res
                 ins.def(res);
                 builder.add(ins);
                 builder.add(new Instruction(INSTR_COUNTER++, 
                     "cqto")); //clear rdx
                 ins = new Instruction(INSTR_COUNTER++,
-                    "idiv", res);
+                    "idiv", res); //divide %rax by res
                 ins.use(res);
-                builder.add(ins); //divide %rax by r
+                builder.add(ins);
                 ins = new Instruction(INSTR_COUNTER++, 
-                    "mov", new FixReg("rdx"), res);
+                    "mov", new FixReg("rdx"), res); //get remainder from %rdx
                 ins.def(res);
-                builder.add(ins); //get remainder from %rdx
+                builder.add(ins);
             }
             case CONST_LEFT -> {
                 TempReg t = maximalMunch(right, builder);
@@ -311,46 +323,50 @@ public class InstructionSelector {
                 builder.add(new Instruction(INSTR_COUNTER++, 
                     "cqto")); //clear rdx
                 ins = new Instruction(INSTR_COUNTER++,
-                    "idiv", t);
+                    "idiv", t); //divide %rax by r
                 ins.use(t);
-                builder.add(ins); //divide %rax by r
+                builder.add(ins);
                 ins = new Instruction(INSTR_COUNTER++, 
-                    "mov", new FixReg("rdx"), res);
+                    "mov", new FixReg("rdx"), res); //get remainder from %rdx
                 ins.def(res);
-                builder.add(ins); //get remainder from %rdx
+                builder.add(ins);
             }
             case CONST_RIGHT -> {
                 TempReg t = maximalMunch(left, builder);
                 ins = new Instruction(INSTR_COUNTER++, 
-                    "mov", t, new FixReg("rax"));
+                    "mov", t, new FixReg("rax")); //move l to %rax
                 ins.use(t);
-                builder.add(ins); //move l to %rax
+                builder.add(ins);
                 builder.add(new Instruction(INSTR_COUNTER++, 
                     "cqto")); //clear rdx
-                builder.add(new Instruction(INSTR_COUNTER++, 
-                    "idiv", new Immediate(children.val_r))); //divide %rax by r
                 ins = new Instruction(INSTR_COUNTER++, 
-                    "mov", new FixReg("rdx"), res);
+                    "mov", new Immediate(children.val_r), res); //move r to res
                 ins.def(res);
-                builder.add(ins); //get remainder from %rdx
+                builder.add(ins);
+                builder.add(new Instruction(INSTR_COUNTER++, 
+                    "idiv", res)); //divide %rax by res
+                ins = new Instruction(INSTR_COUNTER++, 
+                    "mov", new FixReg("rdx"), res); //get remainder from %rdx
+                ins.def(res);
+                builder.add(ins);
             }
             default -> {
                 TempReg t1 = maximalMunch(left, builder);
                 TempReg t2 = maximalMunch(right, builder);
                 ins = new Instruction(INSTR_COUNTER++, 
-                    "mov", t1, new FixReg("rax"));
+                    "mov", t1, new FixReg("rax")); //move l to %rax
                 ins.use(t1);
-                builder.add(ins); //move l to %rax
+                builder.add(ins);
                 builder.add(new Instruction(INSTR_COUNTER++, 
                     "cqto")); //clear rdx
                 ins = new Instruction(INSTR_COUNTER++, 
-                    "idiv", t2);
+                    "idiv", t2); //divide %rax by r
                 ins.use(t2);
-                builder.add(ins); //divide %rax by r
+                builder.add(ins);
                 ins = new Instruction(INSTR_COUNTER++, 
-                    "mov", new FixReg("rdx"), res);
+                    "mov", new FixReg("rdx"), res); //get remainder from %rdx
                 ins.def(res);
-                builder.add(ins); //get remainder from %rdx
+                builder.add(ins);
             }
         }
 
@@ -358,29 +374,36 @@ public class InstructionSelector {
     }
 
     private TempReg handleDivNode(DivNode div, List<Instruction> builder) {
-        Node left = div.predecessor(0);
-        Node right = div.predecessor(1);
+        Node left = div.predecessor(DivNode.LEFT);
+        Node right = div.predecessor(DivNode.RIGHT);
+        Node sideEffect = NodeSupport.predecessorSkipProj(div, DivNode.SIDE_EFFECT);
+
         Pair children = new Pair(left, right);
         TempReg res = newTempReg();
         Instruction ins;
+
+        if(!(sideEffect.equals(left) || sideEffect.equals(right) || sideEffect instanceof StartNode)){ 
+            maximalMunch(sideEffect, builder); //ignore result (only trigger side effect)
+        }
 
         switch(children.pattern) {
             case CONST_CONST -> {
                 builder.add(new Instruction(INSTR_COUNTER++, 
                     "mov", new Immediate(children.val_l), new FixReg("rax"))); //move l to %rax
-                ins = new Instruction(INSTR_COUNTER++, "mov", new Immediate(children.val_r), res);
+                ins = new Instruction(INSTR_COUNTER++, 
+                    "mov", new Immediate(children.val_r), res); //move r to res
                 ins.def(res);
                 builder.add(ins);
                 builder.add(new Instruction(INSTR_COUNTER++, 
                     "cqto")); //clear rdx
                 ins = new Instruction(INSTR_COUNTER++,
-                    "idiv", res);
+                    "idiv", res); //divide %rax by r
                 ins.use(res);
-                builder.add(ins); //divide %rax by r
+                builder.add(ins);
                 ins = new Instruction(INSTR_COUNTER++, 
-                    "mov", new FixReg("rax"), res);
+                    "mov", new FixReg("rax"), res); //get quotient from %rax
                 ins.def(res);
-                builder.add(ins); //get quotient from %rax
+                builder.add(ins);
             }
             case CONST_LEFT -> {
                 TempReg t = maximalMunch(right, builder);
@@ -389,46 +412,50 @@ public class InstructionSelector {
                 builder.add(new Instruction(INSTR_COUNTER++, 
                     "cqto")); //clear rdx
                 ins = new Instruction(INSTR_COUNTER++, 
-                    "idiv", t);
+                    "idiv", t); //divide %rax by r
                 ins.use(t);
-                builder.add(ins); //divide %rax by r
+                builder.add(ins);
                 ins = new Instruction(INSTR_COUNTER++, 
-                    "mov", new FixReg("rax"), res);
+                    "mov", new FixReg("rax"), res); //get quotient from %rax
                 ins.def(res);
-                builder.add(ins); //get quotient from %rax
+                builder.add(ins);
             }
             case CONST_RIGHT -> {
                 TempReg t = maximalMunch(left, builder);
                 ins = new Instruction(INSTR_COUNTER++, 
-                    "mov", t, new FixReg("rax"));
+                    "mov", t, new FixReg("rax")); //move l to %rax
                 ins.use(t);
-                builder.add(ins); //move l to %rax
+                builder.add(ins);
                 builder.add(new Instruction(INSTR_COUNTER++, 
                     "cqto")); //clear rdx
-                builder.add(new Instruction(INSTR_COUNTER++, 
-                    "idiv", new Immediate(children.val_r))); //divide %rax by r
                 ins = new Instruction(INSTR_COUNTER++, 
-                    "mov", new FixReg("rax"), res);
+                    "mov", new Immediate(children.val_r), res); //move r to res
                 ins.def(res);
-                builder.add(ins); //get quotient from %rax
+                builder.add(ins);
+                builder.add(new Instruction(INSTR_COUNTER++, 
+                    "idiv", res)); //divide %rax by res
+                ins = new Instruction(INSTR_COUNTER++, 
+                    "mov", new FixReg("rax"), res); //get quotient from %rax
+                ins.def(res);
+                builder.add(ins);
             }
             default -> {
                 TempReg t1 = maximalMunch(left, builder);
                 TempReg t2 = maximalMunch(right, builder);
                 ins = new Instruction(INSTR_COUNTER++, 
-                    "mov", t1, new FixReg("rax"));
+                    "mov", t1, new FixReg("rax")); //move l to %rax
                 ins.use(t1);
-                builder.add(ins); //move l to %rax
+                builder.add(ins);
                 builder.add(new Instruction(INSTR_COUNTER++, 
                     "cqto")); //clear rdx
                 ins = new Instruction(INSTR_COUNTER++, 
-                    "idiv", t2);
+                    "idiv", t2); //divide %rax by r
                 ins.use(t2);
-                builder.add(ins); //divide %rax by r
+                builder.add(ins);
                 ins = new Instruction(INSTR_COUNTER++, 
-                    "mov", new FixReg("rax"), res);
+                    "mov", new FixReg("rax"), res); //get quotient from %rax
                 ins.def(res);
-                builder.add(ins); //get quotient from %rax
+                builder.add(ins);
             }
         }
 
