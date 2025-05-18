@@ -1,10 +1,88 @@
-1: mov $-2147483648, %t1      {live: }
-2: mov $-1, %t2               {live: %t1}
-3: mov %t1, %eax              {live: %t1,%t2}
-4: cltq                       {live: %t2}
-5: cqto                       {live: %t2}
-6: idiv %t2                   {live: %t2}
-7: mov %eax, %t0              {live: }
-8: mov %t0, %eax              {live: %t0}
-9: cltq                       {live: }
-10: ret                       {live: }
+1: mov $2, %t21               {live: }
+2: mov %t21, %t20             {live: %t21}
+3: add $1, %t20               {live: %t20,%t21}
+4: mov %t21, %t22             {live: %t21,%t20}
+5: add %t20, %t22             {live: %t20,%t22}
+6: mov %t20, %t19             {live: %t20,%t22}
+7: add %t22, %t19             {live: %t22,%t19}
+8: mov %t22, %t23             {live: %t22,%t19}
+9: add %t19, %t23             {live: %t19,%t23}
+10: mov %t19, %t18            {live: %t19,%t23}
+11: add %t23, %t18            {live: %t23,%t18}
+12: mov %t23, %t24            {live: %t23,%t18}
+13: add %t18, %t24            {live: %t18,%t24}
+14: mov %t18, %t17            {live: %t18,%t24}
+15: add %t24, %t17            {live: %t24,%t17}
+16: mov %t24, %t25            {live: %t24,%t17}
+17: add %t17, %t25            {live: %t17,%t25}
+18: mov %t17, %t16            {live: %t17,%t25}
+19: add %t25, %t16            {live: %t25,%t16}
+20: mov %t25, %t26            {live: %t25,%t16}
+21: add %t16, %t26            {live: %t16,%t26}
+22: mov %t16, %t15            {live: %t16,%t26}
+23: add %t26, %t15            {live: %t26,%t15}
+24: mov %t26, %t27            {live: %t26,%t15}
+25: add %t15, %t27            {live: %t15,%t27}
+26: mov %t15, %t14            {live: %t15,%t27}
+27: add %t27, %t14            {live: %t27,%t14}
+28: mov %t27, %t28            {live: %t27,%t14}
+29: add %t14, %t28            {live: %t14,%t28}
+30: mov %t14, %t13            {live: %t14,%t28}
+31: add %t28, %t13            {live: %t28,%t13}
+32: mov %t28, %t29            {live: %t28,%t13}
+33: add %t13, %t29            {live: %t13,%t29}
+34: mov %t13, %t12            {live: %t13,%t29}
+35: add %t29, %t12            {live: %t29,%t12}
+36: mov %t29, %t30            {live: %t29,%t12}
+37: add %t12, %t30            {live: %t12,%t30}
+38: mov %t12, %t11            {live: %t12,%t30}
+39: add %t30, %t11            {live: %t30,%t11}
+40: mov %t30, %t31            {live: %t30,%t11}
+41: add %t11, %t31            {live: %t11,%t31}
+42: mov %t11, %t10            {live: %t11,%t31}
+43: add %t31, %t10            {live: %t31,%t10}
+44: mov %t31, %t32            {live: %t31,%t10}
+45: add %t10, %t32            {live: %t10,%t32}
+46: mov %t10, %t9             {live: %t10,%t32}
+47: add %t32, %t9             {live: %t32,%t9}
+48: mov %t32, %t33            {live: %t32,%t9}
+49: add %t9, %t33             {live: %t9,%t33}
+50: mov %t9, %t8              {live: %t9,%t33}
+51: add %t33, %t8             {live: %t33,%t8}
+52: mov %t33, %t34            {live: %t33,%t8}
+53: add %t8, %t34             {live: %t8,%t34}
+54: mov %t8, %t7              {live: %t8,%t34}
+55: add %t34, %t7             {live: %t34,%t7}
+56: mov %t34, %t35            {live: %t34,%t7}
+57: add %t7, %t35             {live: %t7,%t35}
+58: mov %t7, %t6              {live: %t7,%t35}
+59: add %t35, %t6             {live: %t35,%t6}
+60: mov %t35, %t36            {live: %t35,%t6}
+61: add %t6, %t36             {live: %t6,%t36}
+62: mov %t6, %t5              {live: %t6,%t36}
+63: add %t36, %t5             {live: %t36,%t5}
+64: mov %t36, %t37            {live: %t36,%t5}
+65: add %t5, %t37             {live: %t5,%t37}
+66: mov %t5, %t4              {live: %t5,%t37}
+67: add %t37, %t4             {live: %t37,%t4}
+68: mov %t37, %t38            {live: %t37,%t4}
+69: add %t4, %t38             {live: %t4,%t38}
+70: mov %t4, %t3              {live: %t4,%t38}
+71: add %t38, %t3             {live: %t38,%t3}
+72: mov %t38, %t39            {live: %t38,%t3}
+73: add %t3, %t39             {live: %t3,%t39}
+74: mov %t3, %t2              {live: %t3,%t39}
+75: add %t39, %t2             {live: %t39,%t2}
+76: mov %t39, %t40            {live: %t39,%t2}
+77: add %t2, %t40             {live: %t2,%t40}
+78: mov %t2, %t1              {live: %t2,%t40}
+79: add %t40, %t1             {live: %t40,%t1}
+80: mov %t1, %eax             {live: %t1}
+81: cltq                      {live: }
+82: cqto                      {live: }
+83: mov $256, %t0             {live: }
+84: idiv %t0                  {live: }
+85: mov %edx, %t0             {live: }
+86: mov %t0, %eax             {live: %t0}
+87: cltq                      {live: }
+88: ret                       {live: }

@@ -41,20 +41,26 @@ public class InstructionSelector {
     // instruction sequence within a sorted list.
     public TempReg maximalMunch(Node node, List<Instruction> builder) {
         TempReg res;
-        
-        switch (node) {
-            case AddNode add -> res = handleAddNode(add, builder);
-            case SubNode sub -> res = handleSubNode(sub, builder);
-            case MulNode mul -> res = handleMulNode(mul, builder);
-            case ModNode mod -> res = handleModNode(mod, builder);
-            case DivNode div -> res = handleDivNode(div, builder);
-            case ReturnNode ret -> res = handleReturnNode(ret, builder);
-            case ProjNode proj -> res = handleProjNode(proj, builder);
-            default -> {
-                System.out.println("Instruction selection failed: Node was of type " + 
-                    node.toString());
-                return null;
+
+        if(node.instructionInfo.wasVisited()) {
+            res = node.instructionInfo.getRegister();
+        } else {
+            switch (node) {
+                case AddNode add -> res = handleAddNode(add, builder);
+                case SubNode sub -> res = handleSubNode(sub, builder);
+                case MulNode mul -> res = handleMulNode(mul, builder);
+                case ModNode mod -> res = handleModNode(mod, builder);
+                case DivNode div -> res = handleDivNode(div, builder);
+                case ReturnNode ret -> res = handleReturnNode(ret, builder);
+                case ProjNode proj -> res = handleProjNode(proj, builder);
+                default -> {
+                    System.out.println("Instruction selection failed: Node was of type " + 
+                        node.toString());
+                    return null;
+                }
             }
+            node.instructionInfo.setRegister(res); //save result register at Node
+            node.instructionInfo.visit(); //mark as visited
         }
 
         return res;
@@ -143,27 +149,45 @@ public class InstructionSelector {
                 builder.add(ins);
             }
             case CONST_LEFT -> {
-                res = maximalMunch(right, builder);
+                res = newTempReg();
+                TempReg t = maximalMunch(right, builder);
                 ins = new Instruction(INSTR_COUNTER++, 
-                    "add", new Immediate(children.val_l), res);
+                    "mov", t, res); // res <- r
+                ins.use(t);
+                ins.def(res);
+                builder.add(ins);
+                ins = new Instruction(INSTR_COUNTER++, 
+                    "add", new Immediate(children.val_l), res); // res += l
                 ins.def(res);
                 ins.use(res);
                 builder.add(ins); 
             }
-            case CONST_RIGHT -> { 
-                res = maximalMunch(left, builder);
+            case CONST_RIGHT -> {
+                res = newTempReg();
+                TempReg t = maximalMunch(left, builder);
                 ins = new Instruction(INSTR_COUNTER++, 
-                    "add", new Immediate(children.val_r), res);
+                    "mov", t, res); // res <- l
+                ins.use(t);
+                ins.def(res);
+                builder.add(ins);
+                ins = new Instruction(INSTR_COUNTER++, 
+                    "add", new Immediate(children.val_r), res); // res += r
                 ins.def(res);
                 ins.use(res);
                 builder.add(ins);
             }
             default -> {
-                res = maximalMunch(left, builder);
-                TempReg t = maximalMunch(right, builder);
-                ins = new Instruction(INSTR_COUNTER++, "add", t, res);
+                res = newTempReg();
+                TempReg t1 = maximalMunch(left, builder);
+                TempReg t2 = maximalMunch(right, builder);
+                ins = new Instruction(INSTR_COUNTER++, 
+                    "mov", t1, res); // res <- l
+                ins.use(t1);
                 ins.def(res);
-                ins.use(t);
+                builder.add(ins);
+                ins = new Instruction(INSTR_COUNTER++, "add", t2, res); // res += r
+                ins.def(res);
+                ins.use(t2);
                 ins.use(res);
                 builder.add(ins);
             }
@@ -189,32 +213,44 @@ public class InstructionSelector {
             }
             case CONST_LEFT -> {
                 res = newTempReg();
-                TempReg t = maximalMunch(right, builder); // t <- right
+                TempReg t = maximalMunch(right, builder); // t <- r
                 ins = new Instruction(INSTR_COUNTER++, 
-                    "mov", new Immediate(children.val_l), res); // res <- imm
+                    "mov", new Immediate(children.val_l), res); // res <- l
                 ins.def(res);
                 builder.add(ins);
                 ins = new Instruction(INSTR_COUNTER++, 
-                    "sub", t, res); // res = res - t 
+                    "sub", t, res); // res -= t 
                 ins.def(res);
                 ins.use(t);
                 ins.use(res);
                 builder.add(ins); 
             }
             case CONST_RIGHT -> { 
-                res = maximalMunch(left, builder); // res <- left
+                res = newTempReg();
+                TempReg t = maximalMunch(left, builder);
+                ins = new Instruction(INSTR_COUNTER++,
+                    "mov", t, res); // res <- l
+                ins.use(t);
+                ins.def(res);
+                builder.add(ins);
                 ins = new Instruction(INSTR_COUNTER++, 
-                    "sub", new Immediate(children.val_r), res); // res = res - imm
+                    "sub", new Immediate(children.val_r), res); // res -= r
                 ins.def(res);
                 ins.use(res);
                 builder.add(ins);
             }
             default -> {
-                res = maximalMunch(left, builder);
-                TempReg t = maximalMunch(right, builder);
-                ins = new Instruction(INSTR_COUNTER++, "sub", t, res);
+                res = newTempReg();
+                TempReg t1 = maximalMunch(left, builder);
+                TempReg t2 = maximalMunch(right, builder);
+                ins = new Instruction(INSTR_COUNTER++,
+                    "mov", t1, res); // res <- l
+                ins.use(t1);
                 ins.def(res);
-                ins.use(t);
+                builder.add(ins);
+                ins = new Instruction(INSTR_COUNTER++, "sub", t2, res); // res -= r
+                ins.def(res);
+                ins.use(t2);
                 ins.use(res);
                 builder.add(ins);
             }
@@ -239,11 +275,17 @@ public class InstructionSelector {
                 builder.add(ins);
             }
             case CONST_LEFT -> {
-                res = maximalMunch(right, builder);
+                res = newTempReg();
+                TempReg t = maximalMunch(right, builder);
+                ins = new Instruction(INSTR_COUNTER++,
+                    "mov", t, res); // res <- r
+                ins.use(t);
+                ins.def(res);
+                builder.add(ins);
                 if((Math.log(children.val_l) / Math.log(2)) % 1 == 0) {
                     //optimization: << instead of * (if imm is a power of 2)
                     ins = new Instruction(INSTR_COUNTER++, 
-                        "shl", new Immediate((int) (Math.log(children.val_l) / Math.log(2))), res);
+                        "shl", new Immediate((int) (Math.log(children.val_l) / Math.log(2))), res); //shift res
                     ins.def(res);
                     ins.use(res);
                     builder.add(ins); 
@@ -256,11 +298,17 @@ public class InstructionSelector {
                 }
             }
             case CONST_RIGHT -> {
-                res = maximalMunch(left, builder);
+                res = newTempReg();
+                TempReg t = maximalMunch(left, builder);
+                ins = new Instruction(INSTR_COUNTER++,
+                    "mov", t, res); // res <- l
+                ins.use(t);
+                ins.def(res);
+                builder.add(ins);
                 if((Math.log(children.val_r) / Math.log(2)) % 1 == 0) {
                     //optimization: << instead of * (if imm is a power of 2)
                     ins = new Instruction(INSTR_COUNTER++, 
-                        "shl", new Immediate((int) (Math.log(children.val_r) / Math.log(2))), res);
+                        "shl", new Immediate((int) (Math.log(children.val_r) / Math.log(2))), res); //shift res
                     ins.def(res);
                     ins.use(res);
                     builder.add(ins); 
@@ -273,11 +321,18 @@ public class InstructionSelector {
                 }
             }
             default -> {
-                res = maximalMunch(left, builder);
-                TempReg t = maximalMunch(right, builder);
-                ins = new Instruction(INSTR_COUNTER++, "imul", t, res);
+                res = newTempReg();
+                TempReg t1 = maximalMunch(left, builder);
+                TempReg t2 = maximalMunch(right, builder);
+                ins = new Instruction(INSTR_COUNTER++,
+                    "mov", t1, res); // res <- l
+                ins.use(t1);
                 ins.def(res);
-                ins.use(t);
+                builder.add(ins);
+                ins = new Instruction(INSTR_COUNTER++, 
+                    "imul", t2, res); // res *= r
+                ins.def(res);
+                ins.use(t2);
                 ins.use(res);
                 builder.add(ins);
             }
