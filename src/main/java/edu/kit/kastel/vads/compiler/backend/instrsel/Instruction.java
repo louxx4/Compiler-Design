@@ -111,6 +111,14 @@ public final class Instruction<S extends Parameter,T extends Parameter> {
         this.def.add(t);
     }
 
+    public void calculateInterference() {
+        List<TempReg> interfering = this.def;
+        interfering.removeIf(t -> this.use.contains(t));
+        for(TempReg t : interfering) {
+            t.interferes(); //mark as interfering
+        }
+    }
+
     public void succ(Instruction i) {
         this.succ.add(i);
     }

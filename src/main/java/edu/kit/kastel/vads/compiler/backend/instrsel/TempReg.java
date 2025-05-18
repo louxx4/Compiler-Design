@@ -6,6 +6,7 @@ public class TempReg extends Parameter {
 
     public final int id;
     public Register register;
+    private boolean interferes = false;
 
     public TempReg (int id) {
         this.id = id;
@@ -28,5 +29,14 @@ public class TempReg extends Parameter {
     @Override
     public void setSpillingRegister(String spillingRegister) {
         this.register.setName(spillingRegister);
+    }
+
+    
+    public void setInterfering() {
+        this.interferes = true;
+    }
+
+    public boolean interferes() {
+        return this.interferes;
     }
 }
