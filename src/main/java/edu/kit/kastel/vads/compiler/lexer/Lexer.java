@@ -32,6 +32,7 @@ public class Lexer {
             return Optional.empty();
         }
         Token t = switch (peek()) {
+            // unchanged since Lab 1
             case '(' -> separator(SeparatorType.PAREN_OPEN);
             case ')' -> separator(SeparatorType.PAREN_CLOSE);
             case '{' -> separator(SeparatorType.BRACE_OPEN);
@@ -42,7 +43,15 @@ public class Lexer {
             case '*' -> singleOrAssign(OperatorType.MUL, OperatorType.ASSIGN_MUL);
             case '/' -> singleOrAssign(OperatorType.DIV, OperatorType.ASSIGN_DIV);
             case '%' -> singleOrAssign(OperatorType.MOD, OperatorType.ASSIGN_MOD);
-            case '=' -> new Operator(OperatorType.ASSIGN, buildSpan(1));
+            // changed/added in Lab 2
+            case '=' -> singleOrAssign(OperatorType.ASSIGN, OperatorType.EQ);
+            case '!' -> singleOrAssign(OperatorType.NOT, OperatorType.NEQ);
+            case '~' -> new Operator(OperatorType.NOT_BW, buildSpan(1));
+            case '&' -> singleOrAssignOrLogical(OperatorType.AND_BW, OperatorType.ASSIGN_AND, OperatorType.AND);
+            case '^' -> singleOrAssign(OperatorType.XOR_BW, OperatorType.ASSIGN_XOR);
+            case '|' -> singleOrAssignOrLogical(OperatorType.OR_BW, OperatorType.ASSIGN_OR, OperatorType.OR);
+            case '<' -> singleOrAssignOrShiftOrShiftAssign(OperatorType.LESS, OperatorType.LEQ, OperatorType.SHL, OperatorType.ASSIGN_SHL);
+            case '>' -> singleOrAssignOrShiftOrShiftAssign(OperatorType.GREATER, OperatorType.GEQ, OperatorType.SHR, OperatorType.ASSIGN_SHR);
             default -> {
                 if (isIdentifierChar(peek())) {
                     if (isNumeric(peek())) {
@@ -191,6 +200,27 @@ public class Lexer {
 
     private Token singleOrAssign(OperatorType single, OperatorType assign) {
         if (hasMore(1) && peek(1) == '=') {
+            return new Operator(assign, buildSpan(2));
+        }
+        return new Operator(single, buildSpan(1));
+    }
+
+    private Token singleOrAssignOrShiftOrShiftAssign(OperatorType single, OperatorType assign, OperatorType shift, OperatorType shift_assign) {
+        if (hasMore(1) && peek(1) == single.toString().charAt(0)) { //next char is "<" or ">" (depending on single type)
+            if (hasMore(1) && peek(1) == '=') {
+                return new Operator(shift_assign, buildSpan(3));
+            }
+            return new Operator(shift, buildSpan(2));
+        } else if (hasMore(1) && peek(1) == '=') { //next char is "="
+            return new Operator(assign, buildSpan(2));
+        }
+        return new Operator(single, buildSpan(1));
+    }
+
+    private Token singleOrAssignOrLogical(OperatorType single, OperatorType assign, OperatorType logical) {
+        if (hasMore(1) && peek(1) == single.toString().charAt(0)) { //next char is "&" or "|" (depending on single type)
+            return new Operator(logical, buildSpan(2));
+        } else if (hasMore(1) && peek(1) == '=') { //next char is "="
             return new Operator(assign, buildSpan(2));
         }
         return new Operator(single, buildSpan(1));
