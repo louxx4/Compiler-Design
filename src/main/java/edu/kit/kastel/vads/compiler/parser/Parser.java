@@ -18,8 +18,10 @@ import edu.kit.kastel.vads.compiler.parser.ast.BinaryOperationTree;
 import edu.kit.kastel.vads.compiler.parser.ast.BlockTree;
 import edu.kit.kastel.vads.compiler.parser.ast.DeclarationTree;
 import edu.kit.kastel.vads.compiler.parser.ast.ExpressionTree;
+import edu.kit.kastel.vads.compiler.parser.ast.ForLoopTree;
 import edu.kit.kastel.vads.compiler.parser.ast.FunctionTree;
 import edu.kit.kastel.vads.compiler.parser.ast.IdentExpressionTree;
+import edu.kit.kastel.vads.compiler.parser.ast.IfStatementTree;
 import edu.kit.kastel.vads.compiler.parser.ast.LValueIdentTree;
 import edu.kit.kastel.vads.compiler.parser.ast.LValueTree;
 import edu.kit.kastel.vads.compiler.parser.ast.LiteralTree;
@@ -27,8 +29,11 @@ import edu.kit.kastel.vads.compiler.parser.ast.NameTree;
 import edu.kit.kastel.vads.compiler.parser.ast.NegateTree;
 import edu.kit.kastel.vads.compiler.parser.ast.ProgramTree;
 import edu.kit.kastel.vads.compiler.parser.ast.ReturnTree;
+import edu.kit.kastel.vads.compiler.parser.ast.SimpTree;
+import edu.kit.kastel.vads.compiler.parser.ast.SimpleTree;
 import edu.kit.kastel.vads.compiler.parser.ast.StatementTree;
 import edu.kit.kastel.vads.compiler.parser.ast.TypeTree;
+import edu.kit.kastel.vads.compiler.parser.ast.WhileLoopTree;
 import edu.kit.kastel.vads.compiler.parser.symbol.Name;
 import edu.kit.kastel.vads.compiler.parser.type.BasicType;
 
@@ -75,10 +80,19 @@ public class Parser {
 
     private StatementTree parseStatement() {
         StatementTree statement;
-        if (this.tokenSource.peek().isKeyword(KeywordType.INT)) {
-            statement = parseDeclaration();
-        } else if (this.tokenSource.peek().isKeyword(KeywordType.RETURN)) {
+        Token next = this.tokenSource.peek();
+        if (next.isKeyword(KeywordType.INT)) {
+            statement = parseDeclaration(KeywordType.INT);
+        } else if(next.isKeyword(KeywordType.BOOL)) {
+            statement = parseDeclaration(KeywordType.BOOL);
+        } else if (next.isKeyword(KeywordType.RETURN)) {
             statement = parseReturn();
+        } else if (next.isKeyword(KeywordType.IF)) {
+            statement = parseIfStatement();
+        } else if (next.isKeyword(KeywordType.FOR)) {
+            statement = parseForLoopTree();
+        } else if (next.isKeyword(KeywordType.WHILE)) {
+            statement = parseWhileLoop();
         } else {
             statement = parseSimple();
         }
@@ -86,22 +100,71 @@ public class Parser {
         return statement;
     }
 
-    private StatementTree parseDeclaration() {
-        Keyword type = this.tokenSource.expectKeyword(KeywordType.INT);
+    private IfStatementTree parseIfStatement() {
+        Keyword _if = this.tokenSource.expectKeyword(KeywordType.IF);
+        this.tokenSource.expectSeparator(SeparatorType.PAREN_OPEN);
+        ExpressionTree expr = parseExpression();
+        this.tokenSource.expectSeparator(SeparatorType.PAREN_CLOSE);
+        StatementTree if_statement = parseStatement();
+        StatementTree else_statement = null;
+        if(this.tokenSource.peek().isKeyword(KeywordType.ELSE)) {
+            this.tokenSource.expectKeyword(KeywordType.ELSE);
+            else_statement = parseStatement();
+        }
+        return new IfStatementTree(expr, if_statement, else_statement, _if.span().start());
+    }
+
+    private WhileLoopTree parseWhileLoop() {
+        Keyword _while = this.tokenSource.expectKeyword(KeywordType.WHILE);
+        this.tokenSource.expectSeparator(SeparatorType.PAREN_OPEN);
+        ExpressionTree expr = parseExpression();
+        this.tokenSource.expectSeparator(SeparatorType.PAREN_CLOSE);
+        StatementTree statement = parseStatement();
+        return new WhileLoopTree(expr, statement, _while.span().start());
+    }
+
+    private ForLoopTree parseForLoopTree() {
+        Keyword _for = this.tokenSource.expectKeyword(KeywordType.FOR);
+        this.tokenSource.expectSeparator(SeparatorType.PAREN_OPEN);
+        SimpleTree init = null, advancement = null;
+        if(!this.tokenSource.peek().isSeparator(SeparatorType.SEMICOLON)) {
+            init = parseSimple();
+        }
+        ExpressionTree expr = parseExpression();
+        if(!this.tokenSource.peek().isSeparator(SeparatorType.PAREN_CLOSE)) {
+            advancement = parseSimple();
+        }
+        this.tokenSource.expectSeparator(SeparatorType.PAREN_CLOSE);
+        StatementTree statement = parseStatement();
+        return new ForLoopTree(init, expr, advancement, statement, _for.span().start());
+    }
+
+    private SimpleTree parseSimple() {
+        Token next = this.tokenSource.peek();
+        if(next.isKeyword(KeywordType.INT)) {
+            DeclarationTree decl = parseDeclaration(KeywordType.INT);
+            return new SimpleTree(null, decl);
+        } else if(next.isKeyword(KeywordType.BOOL)) {
+            DeclarationTree decl = parseDeclaration(KeywordType.BOOL);
+            return new SimpleTree(null, decl);
+        } else {
+            LValueTree lValue = parseLValue();
+            Operator assignmentOperator = parseAssignmentOperator();
+            ExpressionTree expression = parseExpression();
+            return new SimpleTree(new AssignmentTree(lValue, assignmentOperator, expression), null);
+        }
+    }
+
+    private DeclarationTree parseDeclaration(KeywordType type) {
+        Keyword keyword = this.tokenSource.expectKeyword(type);
+        BasicType basicType = (type == KeywordType.INT ? BasicType.INT : BasicType.BOOL);
         Identifier ident = this.tokenSource.expectIdentifier();
         ExpressionTree expr = null;
         if (this.tokenSource.peek().isOperator(OperatorType.ASSIGN)) {
             this.tokenSource.expectOperator(OperatorType.ASSIGN);
             expr = parseExpression();
         }
-        return new DeclarationTree(new TypeTree(BasicType.INT, type.span()), name(ident), expr);
-    }
-
-    private StatementTree parseSimple() {
-        LValueTree lValue = parseLValue();
-        Operator assignmentOperator = parseAssignmentOperator();
-        ExpressionTree expression = parseExpression();
-        return new AssignmentTree(lValue, assignmentOperator, expression);
+        return new DeclarationTree(new TypeTree(basicType, keyword.span()), name(ident), expr);
     }
 
     private Operator parseAssignmentOperator() {

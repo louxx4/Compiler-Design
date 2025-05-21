@@ -1,4 +1,5 @@
 package edu.kit.kastel.vads.compiler.parser.ast;
 
-public sealed interface StatementTree extends Tree permits AssignmentTree, BlockTree, DeclarationTree, ReturnTree {
+public sealed interface StatementTree extends Tree permits AssignmentTree, BlockTree, DeclarationTree, ReturnTree, 
+    IfStatementTree, WhileLoopTree, ForLoopTree, SimpleTree {
 }

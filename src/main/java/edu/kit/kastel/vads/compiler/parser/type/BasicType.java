@@ -3,7 +3,7 @@ package edu.kit.kastel.vads.compiler.parser.type;
 import java.util.Locale;
 
 public enum BasicType implements Type {
-    INT;
+    INT, BOOL;
 
     @Override
     public String asString() {
