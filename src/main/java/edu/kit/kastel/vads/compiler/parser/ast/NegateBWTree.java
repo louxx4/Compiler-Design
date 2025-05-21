@@ -1,13 +1,12 @@
 package edu.kit.kastel.vads.compiler.parser.ast;
 
-import edu.kit.kastel.vads.compiler.Position;
 import edu.kit.kastel.vads.compiler.Span;
 import edu.kit.kastel.vads.compiler.parser.visitor.Visitor;
 
-public record ReturnTree(ExpressionTree expression, Position start) implements ControlTree {
+public record NegateBWTree(ExpressionTree expression, Span notPos) implements ExpressionTree {
     @Override
     public Span span() {
-        return new Span.SimpleSpan(start(), expression().span().end());
+        return notPos().merge(expression().span());
     }
 
     @Override

@@ -16,12 +16,15 @@ import edu.kit.kastel.vads.compiler.lexer.Token;
 import edu.kit.kastel.vads.compiler.parser.ast.AssignmentTree;
 import edu.kit.kastel.vads.compiler.parser.ast.BinaryOperationTree;
 import edu.kit.kastel.vads.compiler.parser.ast.BlockTree;
+import edu.kit.kastel.vads.compiler.parser.ast.BooleanTree;
+import edu.kit.kastel.vads.compiler.parser.ast.ConditionalTree;
 import edu.kit.kastel.vads.compiler.parser.ast.DeclarationTree;
 import edu.kit.kastel.vads.compiler.parser.ast.ExpressionTree;
 import edu.kit.kastel.vads.compiler.parser.ast.ForLoopTree;
 import edu.kit.kastel.vads.compiler.parser.ast.FunctionTree;
 import edu.kit.kastel.vads.compiler.parser.ast.IdentExpressionTree;
 import edu.kit.kastel.vads.compiler.parser.ast.IfStatementTree;
+import edu.kit.kastel.vads.compiler.parser.ast.JumpTree;
 import edu.kit.kastel.vads.compiler.parser.ast.LValueIdentTree;
 import edu.kit.kastel.vads.compiler.parser.ast.LValueTree;
 import edu.kit.kastel.vads.compiler.parser.ast.LiteralTree;
@@ -29,13 +32,13 @@ import edu.kit.kastel.vads.compiler.parser.ast.NameTree;
 import edu.kit.kastel.vads.compiler.parser.ast.NegateTree;
 import edu.kit.kastel.vads.compiler.parser.ast.ProgramTree;
 import edu.kit.kastel.vads.compiler.parser.ast.ReturnTree;
-import edu.kit.kastel.vads.compiler.parser.ast.SimpTree;
 import edu.kit.kastel.vads.compiler.parser.ast.SimpleTree;
 import edu.kit.kastel.vads.compiler.parser.ast.StatementTree;
 import edu.kit.kastel.vads.compiler.parser.ast.TypeTree;
 import edu.kit.kastel.vads.compiler.parser.ast.WhileLoopTree;
 import edu.kit.kastel.vads.compiler.parser.symbol.Name;
 import edu.kit.kastel.vads.compiler.parser.type.BasicType;
+import edu.kit.kastel.vads.compiler.parser.type.JumpType;
 
 public class Parser {
     private final TokenSource tokenSource;
@@ -93,6 +96,12 @@ public class Parser {
             statement = parseForLoopTree();
         } else if (next.isKeyword(KeywordType.WHILE)) {
             statement = parseWhileLoop();
+        } else if (next.isKeyword(KeywordType.CONTINUE)) {
+            statement = parseContinue();
+        } else if (next.isKeyword(KeywordType.BREAK)) {
+            statement = parseBreak();
+        } else if (next.isSeparator(SeparatorType.BRACE_OPEN)) {
+            statement = parseBlock();
         } else {
             statement = parseSimple();
         }
@@ -170,7 +179,8 @@ public class Parser {
     private Operator parseAssignmentOperator() {
         if (this.tokenSource.peek() instanceof Operator op) {
             return switch (op.type()) {
-                case ASSIGN, ASSIGN_DIV, ASSIGN_MINUS, ASSIGN_MOD, ASSIGN_MUL, ASSIGN_PLUS -> {
+                case ASSIGN, ASSIGN_DIV, ASSIGN_MINUS, ASSIGN_MOD, ASSIGN_MUL, ASSIGN_PLUS, 
+                        ASSIGN_AND, ASSIGN_XOR, ASSIGN_OR, ASSIGN_SHL, ASSIGN_SHR -> {
                     this.tokenSource.consume();
                     yield op;
                 }
@@ -197,11 +207,21 @@ public class Parser {
         return new ReturnTree(expression, ret.span().start());
     }
 
+    private StatementTree parseContinue() {
+        Keyword keyword = this.tokenSource.expectKeyword(KeywordType.CONTINUE);
+        return new JumpTree(JumpType.CONTINUE, keyword.span());
+    }
+
+    private StatementTree parseBreak() {
+        Keyword keyword = this.tokenSource.expectKeyword(KeywordType.BREAK);
+        return new JumpTree(JumpType.BREAK, keyword.span());
+    }
+
     private ExpressionTree parseExpression() {
         ExpressionTree lhs = parseTerm();
         while (true) {
             if (this.tokenSource.peek() instanceof Operator(var type, _)
-                && (type == OperatorType.PLUS || type == OperatorType.MINUS)) {
+                && (type == OperatorType.PLUS || type == OperatorType.MINUS)) { //TODO: add operations
                 this.tokenSource.consume();
                 lhs = new BinaryOperationTree(lhs, parseTerm(), type);
             } else {
@@ -214,9 +234,15 @@ public class Parser {
         ExpressionTree lhs = parseFactor();
         while (true) {
             if (this.tokenSource.peek() instanceof Operator(var type, _)
-                && (type == OperatorType.MUL || type == OperatorType.DIV || type == OperatorType.MOD)) {
+                && (type == OperatorType.MUL || type == OperatorType.DIV || type == OperatorType.MOD)) { //TODO: add operations
                 this.tokenSource.consume();
                 lhs = new BinaryOperationTree(lhs, parseFactor(), type);
+            } else if (this.tokenSource.peek() instanceof Operator(var type, _) && type == OperatorType.QUESTIONMARK) {
+                this.tokenSource.consume();
+                ExpressionTree if_expr = parseFactor();
+                this.tokenSource.expectSeparator(SeparatorType.COLON);
+                ExpressionTree else_expr = parseFactor();
+                lhs = new ConditionalTree(lhs, if_expr, else_expr);
             } else {
                 return lhs;
             }
@@ -235,6 +261,10 @@ public class Parser {
                 Span span = this.tokenSource.consume().span();
                 yield new NegateTree(parseFactor(), span);
             }
+            case Operator(var type, _) when type == OperatorType.NOT_BW -> {
+                Span span = this.tokenSource.consume().span();
+                yield new NegateTree(parseFactor(), span);
+            }
             case Identifier ident -> {
                 this.tokenSource.consume();
                 yield new IdentExpressionTree(name(ident));
@@ -242,6 +272,14 @@ public class Parser {
             case NumberLiteral(String value, int base, Span span) -> {
                 this.tokenSource.consume();
                 yield new LiteralTree(value, base, span);
+            }
+            case Keyword(var type, _) when type == KeywordType.TRUE -> {
+                Span span = this.tokenSource.consume().span();
+                yield new BooleanTree(true, span);
+            }
+            case Keyword(var type, _) when type == KeywordType.FALSE -> {
+                Span span = this.tokenSource.consume().span();
+                yield new BooleanTree(false, span);
             }
             case Token t -> throw new ParseException("invalid factor " + t);
         };

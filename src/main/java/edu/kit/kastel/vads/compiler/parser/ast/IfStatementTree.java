@@ -6,14 +6,14 @@ import edu.kit.kastel.vads.compiler.Position;
 import edu.kit.kastel.vads.compiler.Span;
 import edu.kit.kastel.vads.compiler.parser.visitor.Visitor;
 
-public record IfStatementTree(ExpressionTree expression, StatementTree if_statement, @Nullable StatementTree else_statement, Position start) implements StatementTree {
+public record IfStatementTree(ExpressionTree expression, StatementTree if_body, @Nullable StatementTree else_body, Position start) implements ControlTree {
 
     @Override
     public Span span() {
-        if (else_statement() != null) {
-            return new Span.SimpleSpan(start(), else_statement().span().end());
+        if (else_body() != null) {
+            return new Span.SimpleSpan(start(), else_body().span().end());
         }
-        return new Span.SimpleSpan(start(), if_statement().span().end());
+        return new Span.SimpleSpan(start(), if_body().span().end());
     }
 
     @Override

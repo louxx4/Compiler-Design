@@ -1,13 +1,13 @@
 package edu.kit.kastel.vads.compiler.parser.ast;
 
-import edu.kit.kastel.vads.compiler.Position;
 import edu.kit.kastel.vads.compiler.Span;
 import edu.kit.kastel.vads.compiler.parser.visitor.Visitor;
 
-public record ReturnTree(ExpressionTree expression, Position start) implements ControlTree {
+public record ConditionalTree(ExpressionTree lhs, ExpressionTree if_expression, ExpressionTree else_expression) implements ExpressionTree {
+
     @Override
     public Span span() {
-        return new Span.SimpleSpan(start(), expression().span().end());
+        return new Span.SimpleSpan(lhs().span().start(), else_expression().span().end());
     }
 
     @Override

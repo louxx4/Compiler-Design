@@ -6,8 +6,8 @@ import edu.kit.kastel.vads.compiler.Position;
 import edu.kit.kastel.vads.compiler.Span;
 import edu.kit.kastel.vads.compiler.parser.visitor.Visitor;
 
-public record ForLoopTree(@Nullable SimpTree initialization, ExpressionTree condition, 
-    @Nullable SimpTree advancement, StatementTree body, Position start) implements StatementTree {
+public record ForLoopTree(@Nullable SimpleTree initialization, ExpressionTree condition, 
+    @Nullable SimpleTree advancement, StatementTree body, Position start) implements ControlTree {
 
     @Override
     public Span span() {

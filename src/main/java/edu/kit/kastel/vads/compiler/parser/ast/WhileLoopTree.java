@@ -4,7 +4,7 @@ import edu.kit.kastel.vads.compiler.Position;
 import edu.kit.kastel.vads.compiler.Span;
 import edu.kit.kastel.vads.compiler.parser.visitor.Visitor;
 
-public record WhileLoopTree(ExpressionTree expression, StatementTree statement, Position start) implements StatementTree {
+public record WhileLoopTree(ExpressionTree expression, StatementTree statement, Position start) implements ControlTree {
 
     @Override
     public Span span() {

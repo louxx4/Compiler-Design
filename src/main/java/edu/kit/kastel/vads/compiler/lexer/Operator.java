@@ -38,14 +38,15 @@ public record Operator(OperatorType type, Span span) implements Token {
         AND_BW("&"), //bitwise
         OR_BW("|"),  //bitwise
         XOR_BW("^"), //bitwise
-        NOT_BW("^"), //bitwise
+        NOT_BW("~"), //bitwise
         SHL("<<"),
         SHR(">>"),
         ASSIGN_AND("&="),
         ASSIGN_XOR("^="),
         ASSIGN_OR("|="),
         ASSIGN_SHR("<<="),
-        ASSIGN_SHL(">>=")
+        ASSIGN_SHL(">>="),
+        QUESTIONMARK("?")
         ;
 
         private final String value;
