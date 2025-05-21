@@ -1,3 +1,10 @@
 /build/
 /.idea/
 /.gradle/
+foo
+foo.c
+debugfoo
+debuggraph
+asmfoo
+asmexe
+asmfoo.s
