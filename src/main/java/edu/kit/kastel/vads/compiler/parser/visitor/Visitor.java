@@ -13,9 +13,11 @@ import edu.kit.kastel.vads.compiler.parser.ast.IfStatementTree;
 import edu.kit.kastel.vads.compiler.parser.ast.JumpTree;
 import edu.kit.kastel.vads.compiler.parser.ast.LValueIdentTree;
 import edu.kit.kastel.vads.compiler.parser.ast.LiteralTree;
+import edu.kit.kastel.vads.compiler.parser.ast.LogicalOperationTree;
 import edu.kit.kastel.vads.compiler.parser.ast.NameTree;
 import edu.kit.kastel.vads.compiler.parser.ast.NegateBWTree;
 import edu.kit.kastel.vads.compiler.parser.ast.NegateTree;
+import edu.kit.kastel.vads.compiler.parser.ast.NotTree;
 import edu.kit.kastel.vads.compiler.parser.ast.ProgramTree;
 import edu.kit.kastel.vads.compiler.parser.ast.ReturnTree;
 import edu.kit.kastel.vads.compiler.parser.ast.SimpleTree;
@@ -65,4 +67,8 @@ public interface Visitor<T, R> {
     R visit(ConditionalTree conditionalTree, T data);
 
     R visit(JumpTree jumpTree, T data);
+
+    R visit(NotTree notTree, T data);
+
+    R visit(LogicalOperationTree logicalOperationTree, T data);
 }

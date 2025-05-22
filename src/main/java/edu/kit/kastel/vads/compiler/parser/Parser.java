@@ -28,8 +28,11 @@ import edu.kit.kastel.vads.compiler.parser.ast.JumpTree;
 import edu.kit.kastel.vads.compiler.parser.ast.LValueIdentTree;
 import edu.kit.kastel.vads.compiler.parser.ast.LValueTree;
 import edu.kit.kastel.vads.compiler.parser.ast.LiteralTree;
+import edu.kit.kastel.vads.compiler.parser.ast.LogicalOperationTree;
 import edu.kit.kastel.vads.compiler.parser.ast.NameTree;
+import edu.kit.kastel.vads.compiler.parser.ast.NegateBWTree;
 import edu.kit.kastel.vads.compiler.parser.ast.NegateTree;
+import edu.kit.kastel.vads.compiler.parser.ast.NotTree;
 import edu.kit.kastel.vads.compiler.parser.ast.ProgramTree;
 import edu.kit.kastel.vads.compiler.parser.ast.ReturnTree;
 import edu.kit.kastel.vads.compiler.parser.ast.SimpleTree;
@@ -217,38 +220,158 @@ public class Parser {
         return new JumpTree(JumpType.BREAK, keyword.span());
     }
 
+    //Conditional expression (or higher precedence)
+    // a ? b : c ? d : e  entspricht  a ? b : (c ? d : e)  und NICHT  (a ? b : c) ? d : e
     private ExpressionTree parseExpression() {
-        ExpressionTree lhs = parseTerm();
+        ExpressionTree lhs = parseTermPrecedenceLevel1();
+        if (this.tokenSource.peek() instanceof Operator(var type, _) && type == OperatorType.QUESTIONMARK) {
+            this.tokenSource.consume();
+            ExpressionTree if_expr = parseExpression();
+            this.tokenSource.expectSeparator(SeparatorType.COLON);
+            ExpressionTree else_expr = parseExpression();
+            return new ConditionalTree(lhs, if_expr, else_expr);
+        } else {
+            return lhs;  
+        }
+    }
+
+    //Logical or (or higher precedence)
+    private ExpressionTree parseTermPrecedenceLevel1() {
+        ExpressionTree lhs = parseTermPrecedenceLevel2();
         while (true) {
-            if (this.tokenSource.peek() instanceof Operator(var type, _)
-                && (type == OperatorType.PLUS || type == OperatorType.MINUS)) { //TODO: add operations
+            if (this.tokenSource.peek() instanceof Operator(var type, _) && type == OperatorType.OR) {
                 this.tokenSource.consume();
-                lhs = new BinaryOperationTree(lhs, parseTerm(), type);
+                lhs = new LogicalOperationTree(lhs, parseTermPrecedenceLevel2(), type);
             } else {
                 return lhs;
             }
         }
     }
 
-    private ExpressionTree parseTerm() {
+    //Logical and (or higher precedence)
+    private ExpressionTree parseTermPrecedenceLevel2() {
+        ExpressionTree lhs = parseTermPrecedenceLevel3();
+        while (true) {
+            if (this.tokenSource.peek() instanceof Operator(var type, _) && type == OperatorType.AND) {
+                this.tokenSource.consume();
+                lhs = new LogicalOperationTree(lhs, parseTermPrecedenceLevel3(), type);
+            } else {
+                return lhs;
+            }
+        }
+    }
+
+    //Bitwise or (or higher precedence)
+    private ExpressionTree parseTermPrecedenceLevel3() {
+        ExpressionTree lhs = parseTermPrecedenceLevel4();
+        while (true) {
+            if (this.tokenSource.peek() instanceof Operator(var type, _) && type == OperatorType.OR_BW) {
+                this.tokenSource.consume();
+                lhs = new BinaryOperationTree(lhs, parseTermPrecedenceLevel4(), type);
+            } else {
+                return lhs;
+            }
+        }
+    }
+
+    //Bitwise xor (or higher precedence)
+    private ExpressionTree parseTermPrecedenceLevel4() {
+        ExpressionTree lhs = parseTermPrecedenceLevel5();
+        while (true) {
+            if (this.tokenSource.peek() instanceof Operator(var type, _) && type == OperatorType.XOR_BW) {
+                this.tokenSource.consume();
+                lhs = new BinaryOperationTree(lhs, parseTermPrecedenceLevel5(), type);
+            } else {
+                return lhs;
+            }
+        }
+    }
+
+    //Bitwise and (or higher precedence)
+    private ExpressionTree parseTermPrecedenceLevel5() {
+        ExpressionTree lhs = parseTermPrecedenceLevel6();
+        while (true) {
+            if (this.tokenSource.peek() instanceof Operator(var type, _) && type == OperatorType.AND_BW) {
+                this.tokenSource.consume();
+                lhs = new BinaryOperationTree(lhs, parseTermPrecedenceLevel6(), type);
+            } else {
+                return lhs;
+            }
+        }
+    }
+
+    //Overloaded equality, disequality (or higher precedence)
+    private ExpressionTree parseTermPrecedenceLevel6() {
+        ExpressionTree lhs = parseTermPrecedenceLevel7();
+        while (true) {
+            if (this.tokenSource.peek() instanceof Operator(var type, _) && 
+                    (type == OperatorType.EQ || type == OperatorType.NEQ)) {
+                this.tokenSource.consume();
+                lhs = new LogicalOperationTree(lhs, parseTermPrecedenceLevel7(), type);
+            } else {
+                return lhs;
+            }
+        }
+    }
+
+    //Integer comparison (or higher precedence)
+    private ExpressionTree parseTermPrecedenceLevel7() {
+        ExpressionTree lhs = parseTermPrecedenceLevel8();
+        while (true) {
+            if (this.tokenSource.peek() instanceof Operator(var type, _) && 
+                    (type == OperatorType.LESS || type == OperatorType.GREATER ||
+                     type == OperatorType.LEQ || type == OperatorType.GEQ)) {
+                this.tokenSource.consume();
+                lhs = new LogicalOperationTree(lhs, parseTermPrecedenceLevel8(), type);
+            } else {
+                return lhs;
+            }
+        }
+    }
+
+    //(Arithmetic) shift left, right (or higher precedence)
+    private ExpressionTree parseTermPrecedenceLevel8() {
+        ExpressionTree lhs = parseTermPrecedenceLevel9();
+        while (true) {
+            if (this.tokenSource.peek() instanceof Operator(var type, _) && 
+                    (type == OperatorType.SHL || type == OperatorType.SHR)) {
+                this.tokenSource.consume();
+                lhs = new BinaryOperationTree(lhs, parseTermPrecedenceLevel9(), type);
+            } else {
+                return lhs;
+            }
+        }
+    }
+
+    //Integer plus, minus (or higher precedence)
+    private ExpressionTree parseTermPrecedenceLevel9() {
+        ExpressionTree lhs = parseTermPrecedenceLevel10();
+        while (true) {
+            if (this.tokenSource.peek() instanceof Operator(var type, _) && 
+                    (type == OperatorType.PLUS || type == OperatorType.MINUS)) {
+                this.tokenSource.consume();
+                lhs = new BinaryOperationTree(lhs, parseTermPrecedenceLevel10(), type);
+            } else {
+                return lhs;
+            }
+        }
+    }
+
+    //Integer times, divide, modulo (or higher precedence)
+    private ExpressionTree parseTermPrecedenceLevel10() {
         ExpressionTree lhs = parseFactor();
         while (true) {
-            if (this.tokenSource.peek() instanceof Operator(var type, _)
-                && (type == OperatorType.MUL || type == OperatorType.DIV || type == OperatorType.MOD)) { //TODO: add operations
+            if (this.tokenSource.peek() instanceof Operator(var type, _) && 
+                    (type == OperatorType.MUL || type == OperatorType.DIV || type == OperatorType.MOD)) {
                 this.tokenSource.consume();
                 lhs = new BinaryOperationTree(lhs, parseFactor(), type);
-            } else if (this.tokenSource.peek() instanceof Operator(var type, _) && type == OperatorType.QUESTIONMARK) {
-                this.tokenSource.consume();
-                ExpressionTree if_expr = parseFactor();
-                this.tokenSource.expectSeparator(SeparatorType.COLON);
-                ExpressionTree else_expr = parseFactor();
-                lhs = new ConditionalTree(lhs, if_expr, else_expr);
             } else {
                 return lhs;
             }
         }
     }
 
+    //Logical not, bitwise not, unary minus, parentheses, true, false
     private ExpressionTree parseFactor() {
         return switch (this.tokenSource.peek()) {
             case Separator(var type, _) when type == SeparatorType.PAREN_OPEN -> {
@@ -263,7 +386,11 @@ public class Parser {
             }
             case Operator(var type, _) when type == OperatorType.NOT_BW -> {
                 Span span = this.tokenSource.consume().span();
-                yield new NegateTree(parseFactor(), span);
+                yield new NegateBWTree(parseFactor(), span);
+            }
+            case Operator(var type, _) when type == OperatorType.NOT -> {
+                Span span = this.tokenSource.consume().span();
+                yield new NotTree(parseFactor(), span);
             }
             case Identifier ident -> {
                 this.tokenSource.consume();
