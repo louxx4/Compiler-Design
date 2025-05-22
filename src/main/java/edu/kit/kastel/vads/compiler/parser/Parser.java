@@ -240,8 +240,8 @@ public class Parser {
         ExpressionTree lhs = parseTermPrecedenceLevel2();
         while (true) {
             if (this.tokenSource.peek() instanceof Operator(var type, _) && type == OperatorType.OR) {
-                this.tokenSource.consume();
-                lhs = new LogicalOperationTree(lhs, parseTermPrecedenceLevel2(), type);
+                Span span = this.tokenSource.consume().span();
+                lhs = new ConditionalTree(lhs, new BooleanTree(true, span), parseTermPrecedenceLevel2());
             } else {
                 return lhs;
             }
@@ -253,8 +253,8 @@ public class Parser {
         ExpressionTree lhs = parseTermPrecedenceLevel3();
         while (true) {
             if (this.tokenSource.peek() instanceof Operator(var type, _) && type == OperatorType.AND) {
-                this.tokenSource.consume();
-                lhs = new LogicalOperationTree(lhs, parseTermPrecedenceLevel3(), type);
+                Span span = this.tokenSource.consume().span();
+                lhs = new ConditionalTree(lhs, parseTermPrecedenceLevel3(), new BooleanTree(false, span));
             } else {
                 return lhs;
             }
