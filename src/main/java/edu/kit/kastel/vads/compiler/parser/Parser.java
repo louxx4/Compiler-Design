@@ -221,7 +221,7 @@ public class Parser {
     }
 
     //Conditional expression (or higher precedence)
-    // a ? b : c ? d : e  entspricht  a ? b : (c ? d : e)  und NICHT  (a ? b : c) ? d : e
+    // a ? b : c ? d : e  IS  a ? b : (c ? d : e)  and NOT  (a ? b : c) ? d : e
     private ExpressionTree parseExpression() {
         ExpressionTree lhs = parseTermPrecedenceLevel1();
         if (this.tokenSource.peek() instanceof Operator(var type, _) && type == OperatorType.QUESTIONMARK) {
