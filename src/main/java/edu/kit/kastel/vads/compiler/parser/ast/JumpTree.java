@@ -4,12 +4,7 @@ import edu.kit.kastel.vads.compiler.Span;
 import edu.kit.kastel.vads.compiler.parser.type.JumpType;
 import edu.kit.kastel.vads.compiler.parser.visitor.Visitor;
 
-public record JumpTree(JumpType type, Span _span) implements ControlTree {
-
-    @Override
-    public Span span() {
-        return _span();
-    }
+public record JumpTree(JumpType type, Span span) implements ControlTree {
 
     @Override
     public <T, R> R accept(Visitor<T, R> visitor, T data) {

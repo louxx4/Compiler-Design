@@ -1,16 +1,23 @@
 package edu.kit.kastel.vads.compiler.semantic;
 
-import edu.kit.kastel.vads.compiler.parser.ast.NameTree;
-import edu.kit.kastel.vads.compiler.parser.symbol.Name;
-import org.jspecify.annotations.Nullable;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BinaryOperator;
 
+import org.jspecify.annotations.Nullable;
+
+import edu.kit.kastel.vads.compiler.parser.ast.NameTree;
+import edu.kit.kastel.vads.compiler.parser.symbol.Name;
+
 public class Namespace<T> {
 
     private final Map<Name, T> content;
+    private @Nullable Namespace<T> enclosing = null; //e.g. for nested blocks
+
+    public Namespace(Namespace<T> enclosing) {
+        this();
+        this.enclosing = enclosing;
+    }
 
     public Namespace() {
         this.content = new HashMap<>();
@@ -21,6 +28,11 @@ public class Namespace<T> {
     }
 
     public @Nullable T get(NameTree name) {
-        return this.content.get(name.name());
+        T entry = this.content.get(name.name());
+        if(entry == null && this.enclosing != null) {
+            return this.enclosing.get(name);
+        } else {
+            return entry;
+        }
     }
 }

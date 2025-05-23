@@ -15,16 +15,17 @@ import edu.kit.kastel.vads.compiler.parser.visitor.Unit;
 
 /// Checks that variables are
 /// - declared before assignment
-/// - not declared twice
+/// - not declared twice (within the same block)
 /// - not initialized twice
 /// - assigned before referenced
-class VariableStatusAnalysis implements NoOpVisitor<Namespace<VariableStatusAnalysis.VariableStatus>> {
+class VariableStatusAnalysis implements NoOpVisitor<Namespace<VariableStatusAnalysis.VariableStatus>[]> {
 
     @Override
-    public Unit visit(AssignmentTree assignmentTree, Namespace<VariableStatus> data) {
+    public Unit visit(AssignmentTree assignmentTree, Namespace<VariableStatus>[] data) {
         switch (assignmentTree.lValue()) {
             case LValueIdentTree(var name) -> {
-                VariableStatus status = data.get(name);
+                int namespace = assignmentTree.block();
+                VariableStatus status = data[namespace].get(name);
                 if (assignmentTree.operator().type() == Operator.OperatorType.ASSIGN) {
                     checkDeclared(name, status);
                 } else {
@@ -32,7 +33,7 @@ class VariableStatusAnalysis implements NoOpVisitor<Namespace<VariableStatusAnal
                 }
                 if (status != VariableStatus.INITIALIZED) {
                     // only update when needed, reassignment is totally fine
-                    updateStatus(data, VariableStatus.INITIALIZED, name);
+                    updateStatus(data, namespace, VariableStatus.INITIALIZED, name);
                 }
             }
         }
@@ -58,27 +59,30 @@ class VariableStatusAnalysis implements NoOpVisitor<Namespace<VariableStatusAnal
     }
 
     @Override
-    public Unit visit(DeclarationTree declarationTree, Namespace<VariableStatus> data) {
-        checkUndeclared(declarationTree.name(), data.get(declarationTree.name()));
+    public Unit visit(DeclarationTree declarationTree, Namespace<VariableStatus>[] data) {
+        int namespace = declarationTree.block();
+        checkUndeclared(declarationTree.name(), data[namespace].get(declarationTree.name()));
         VariableStatus status = declarationTree.initializer() == null
             ? VariableStatus.DECLARED
             : VariableStatus.INITIALIZED;
-        updateStatus(data, status, declarationTree.name());
+        updateStatus(data, namespace, status, declarationTree.name());
         return NoOpVisitor.super.visit(declarationTree, data);
     }
 
-    private static void updateStatus(Namespace<VariableStatus> data, VariableStatus status, NameTree name) {
-        data.put(name, status, (existing, replacement) -> {
+    private static void updateStatus(Namespace<VariableStatus>[] data, int namespace, 
+        VariableStatus status, NameTree name) {
+        data[namespace].put(name, status, (existing, replacement) -> {
             if (existing.ordinal() >= replacement.ordinal()) {
-                throw new SemanticException("variable is already " + existing + ". Cannot be " + replacement + " here.");
+                throw new SemanticException("namespace " + namespace + 
+                    ": variable is already " + existing + ". Cannot be " + replacement + " here.");
             }
             return replacement;
         });
     }
 
     @Override
-    public Unit visit(IdentExpressionTree identExpressionTree, Namespace<VariableStatus> data) {
-        VariableStatus status = data.get(identExpressionTree.name());
+    public Unit visit(IdentExpressionTree identExpressionTree, Namespace<VariableStatus>[] data) {
+        VariableStatus status = data[identExpressionTree.block()].get(identExpressionTree.name());
         checkInitialized(identExpressionTree.name(), status);
         return NoOpVisitor.super.visit(identExpressionTree, data);
     }

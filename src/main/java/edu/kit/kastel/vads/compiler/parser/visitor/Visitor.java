@@ -20,7 +20,6 @@ import edu.kit.kastel.vads.compiler.parser.ast.NegateTree;
 import edu.kit.kastel.vads.compiler.parser.ast.NotTree;
 import edu.kit.kastel.vads.compiler.parser.ast.ProgramTree;
 import edu.kit.kastel.vads.compiler.parser.ast.ReturnTree;
-import edu.kit.kastel.vads.compiler.parser.ast.SimpleTree;
 import edu.kit.kastel.vads.compiler.parser.ast.TypeTree;
 import edu.kit.kastel.vads.compiler.parser.ast.WhileLoopTree;
 
@@ -57,8 +56,6 @@ public interface Visitor<T, R> {
     R visit(WhileLoopTree whileLoopTree, T data);
     
     R visit(ForLoopTree forLoopTree, T data);
-
-    R visit(SimpleTree simpTree, T data);
 
     R visit(BooleanTree booleanTree, T data);
 

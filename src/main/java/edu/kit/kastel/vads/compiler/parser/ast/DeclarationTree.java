@@ -1,10 +1,13 @@
 package edu.kit.kastel.vads.compiler.parser.ast;
 
-import edu.kit.kastel.vads.compiler.Span;
-import edu.kit.kastel.vads.compiler.parser.visitor.Visitor;
 import org.jspecify.annotations.Nullable;
 
-public record DeclarationTree(TypeTree type, NameTree name, @Nullable ExpressionTree initializer) implements StatementTree {
+import edu.kit.kastel.vads.compiler.Span;
+import edu.kit.kastel.vads.compiler.parser.visitor.Visitor;
+
+// block = unique identifier of enclosing block
+public record DeclarationTree(TypeTree type, NameTree name, @Nullable ExpressionTree initializer, 
+                                int block) implements SimpleTree {
     @Override
     public Span span() {
         if (initializer() != null) {

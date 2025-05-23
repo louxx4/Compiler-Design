@@ -12,8 +12,12 @@ public class SemanticAnalysis {
     }
 
     public void analyze() {
+        //check integer ranges
         this.program.accept(new RecursivePostorderVisitor<>(new IntegerLiteralRangeAnalysis()), new Namespace<>());
-        this.program.accept(new RecursivePostorderVisitor<>(new VariableStatusAnalysis()), new Namespace<>());
+        //check variable scopes
+        Namespace<VariableStatusAnalysis.VariableStatus>[] namespaces = new Namespace[this.program.namespaces()];
+        this.program.accept(new RecursivePostorderVisitor<>(new VariableStatusAnalysis()), namespaces);
+        //check for return
         this.program.accept(new RecursivePostorderVisitor<>(new ReturnAnalysis()), new ReturnAnalysis.ReturnState());
     }
 
