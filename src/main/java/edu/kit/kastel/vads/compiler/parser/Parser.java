@@ -2,6 +2,7 @@ package edu.kit.kastel.vads.compiler.parser;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Stack;
 
 import edu.kit.kastel.vads.compiler.Span;
 import edu.kit.kastel.vads.compiler.lexer.Identifier;
@@ -45,8 +46,8 @@ import edu.kit.kastel.vads.compiler.parser.type.JumpType;
 
 public class Parser {
     private final TokenSource tokenSource;
-    private int currentBlock = -1;
-    private int namespaces = 0;
+    private final Stack<Scope> currentScope = new Stack(); //manages the current scope
+    private final List<Scope> scopes = new ArrayList<>(); //will hold tree of block/function scopes
 
     public Parser(TokenSource tokenSource) {
         this.tokenSource = tokenSource;
@@ -54,7 +55,7 @@ public class Parser {
 
     public ProgramTree parseProgram() {
         List functions = List.of(parseFunction());
-        ProgramTree programTree = new ProgramTree(functions, namespaces);
+        ProgramTree programTree = new ProgramTree(functions, this.scopes);
         if (this.tokenSource.hasMore()) {
             throw new ParseException("expected end of input but got " + this.tokenSource.peek());
         }
@@ -78,15 +79,17 @@ public class Parser {
     }
 
     private BlockTree parseBlock() {
-        namespaces++;
-        currentBlock++;
+        //adjust scope
+        enterNewScope();
+        //parse block
         Separator bodyOpen = this.tokenSource.expectSeparator(SeparatorType.BRACE_OPEN);
         List<StatementTree> statements = new ArrayList<>();
         while (!(this.tokenSource.peek() instanceof Separator sep && sep.type() == SeparatorType.BRACE_CLOSE)) {
             statements.add(parseStatement());
         }
         Separator bodyClose = this.tokenSource.expectSeparator(SeparatorType.BRACE_CLOSE);
-        currentBlock--;
+        //readjust scope
+        leaveScope();
         return new BlockTree(statements, bodyOpen.span().merge(bodyClose.span()));
     }
 
@@ -168,7 +171,7 @@ public class Parser {
             Operator assignmentOperator = parseAssignmentOperator();
             ExpressionTree expression = parseExpression();
             return new AssignmentTree(lValue, assignmentOperator, 
-                expression, this.currentBlock);
+                expression, getScopeId());
         }
     }
 
@@ -181,7 +184,7 @@ public class Parser {
             this.tokenSource.expectOperator(OperatorType.ASSIGN);
             expr = parseExpression();
         }
-        return new DeclarationTree(new TypeTree(basicType, keyword.span()), name(ident), expr, currentBlock);
+        return new DeclarationTree(new TypeTree(basicType, keyword.span()), name(ident), expr, getScopeId());
     }
 
     private Operator parseAssignmentOperator() {
@@ -399,7 +402,7 @@ public class Parser {
             }
             case Identifier ident -> {
                 this.tokenSource.consume();
-                yield new IdentExpressionTree(name(ident), currentBlock);
+                yield new IdentExpressionTree(name(ident), getScopeId());
             }
             case NumberLiteral(String value, int base, Span span) -> {
                 this.tokenSource.consume();
@@ -419,5 +422,21 @@ public class Parser {
 
     private static NameTree name(Identifier ident) {
         return new NameTree(Name.forIdentifier(ident), ident.span());
+    }
+
+    private void enterNewScope() {
+        Scope scope;
+        if(this.currentScope.empty()) scope = new Scope(this.scopes.size());
+        else scope = new Scope(this.scopes.size(), this.currentScope.peek());
+        this.scopes.add(scope);
+        this.currentScope.push(scope);
+    }
+
+    private void leaveScope() {
+        this.currentScope.pop();
+    }
+
+    private int getScopeId() {
+        return this.currentScope.peek().getId();
     }
 }

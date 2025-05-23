@@ -3,10 +3,10 @@ package edu.kit.kastel.vads.compiler.parser.ast;
 import java.util.List;
 
 import edu.kit.kastel.vads.compiler.Span;
+import edu.kit.kastel.vads.compiler.parser.Scope;
 import edu.kit.kastel.vads.compiler.parser.visitor.Visitor;
 
-// namespaces = holds amount of namespaces used within the program
-public record ProgramTree(List<FunctionTree> topLevelTrees, int namespaces) implements Tree {
+public record ProgramTree(List<FunctionTree> topLevelTrees, List<Scope> scopes) implements Tree {
     public ProgramTree {
         assert !topLevelTrees.isEmpty() : "must be non-empty";
         topLevelTrees = List.copyOf(topLevelTrees);

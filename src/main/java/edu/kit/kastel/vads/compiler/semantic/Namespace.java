@@ -12,15 +12,14 @@ import edu.kit.kastel.vads.compiler.parser.symbol.Name;
 public class Namespace<T> {
 
     private final Map<Name, T> content;
-    private @Nullable Namespace<T> enclosing = null; //e.g. for nested blocks
-
-    public Namespace(Namespace<T> enclosing) {
-        this();
-        this.enclosing = enclosing;
-    }
+    private @Nullable Namespace<T> enclosing; //e.g. for nested blocks
 
     public Namespace() {
         this.content = new HashMap<>();
+    }
+
+    public void setEnclosingNamespace(Namespace<T> enclosing) {
+        this.enclosing = enclosing;
     }
 
     public void put(NameTree name, T value, BinaryOperator<T> merger) {
