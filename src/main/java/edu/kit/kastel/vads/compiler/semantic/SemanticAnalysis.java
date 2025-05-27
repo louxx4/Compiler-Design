@@ -1,7 +1,5 @@
 package edu.kit.kastel.vads.compiler.semantic;
 
-import java.util.HashMap;
-
 import edu.kit.kastel.vads.compiler.parser.Scope;
 import edu.kit.kastel.vads.compiler.parser.ast.ProgramTree;
 import edu.kit.kastel.vads.compiler.parser.visitor.RecursivePostorderVisitor;

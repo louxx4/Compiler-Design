@@ -138,26 +138,30 @@ public class Parser {
     private WhileLoopTree parseWhileLoop() {
         Keyword _while = this.tokenSource.expectKeyword(KeywordType.WHILE);
         this.tokenSource.expectSeparator(SeparatorType.PAREN_OPEN);
+        enterNewScope(); //own scope for loop variables
         ExpressionTree expr = parseExpression();
         this.tokenSource.expectSeparator(SeparatorType.PAREN_CLOSE);
         StatementTree statement = parseStatement();
+        leaveScope(); //leave loop scope
         return new WhileLoopTree(expr, statement, _while.span().start());
     }
 
     private ForLoopTree parseForLoopTree() {
         Keyword _for = this.tokenSource.expectKeyword(KeywordType.FOR);
         this.tokenSource.expectSeparator(SeparatorType.PAREN_OPEN);
+        enterNewScope(); //own scope for loop variables
         SimpleTree init = null, advancement = null;
         if(!this.tokenSource.peek().isSeparator(SeparatorType.SEMICOLON)) {
             init = parseSimple();
         }
-        ExpressionTree expr = parseExpression();
+        ExpressionTree condition = parseExpression();
         if(!this.tokenSource.peek().isSeparator(SeparatorType.PAREN_CLOSE)) {
             advancement = parseSimple();
         }
         this.tokenSource.expectSeparator(SeparatorType.PAREN_CLOSE);
-        StatementTree statement = parseStatement();
-        return new ForLoopTree(init, expr, advancement, statement, _for.span().start());
+        StatementTree body = parseStatement();
+        leaveScope(); //leave loop scope
+        return new ForLoopTree(init, condition, advancement, body, _for.span().start());
     }
 
     private SimpleTree parseSimple() {
