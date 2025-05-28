@@ -7,7 +7,7 @@ import edu.kit.kastel.vads.compiler.Span;
 import edu.kit.kastel.vads.compiler.parser.visitor.Visitor;
 
 public record ForLoopTree(@Nullable SimpleTree initialization, ExpressionTree condition, 
-    @Nullable SimpleTree advancement, StatementTree body, Position start) implements ControlTree {
+    @Nullable SimpleTree advancement, StatementTree body, int loopId, Position start) implements LoopTree {
 
     @Override
     public Span span() {

@@ -16,10 +16,24 @@ public class SemanticAnalysis {
 
     public void analyze() {
         //check integer ranges
-        this.program.accept(new RecursivePostorderVisitor<>(new IntegerLiteralRangeAnalysis()), new Namespace<>());
+        this.program.accept(new RecursivePostorderVisitor<>(
+            new IntegerLiteralRangeAnalysis()), 
+            new Namespace<>());
 
         //check for return
-        this.program.accept(new RecursivePostorderVisitor<>(new ReturnAnalysis()), new ArrayList<>());
+        this.program.accept(new RecursivePostorderVisitor<>(
+            new ReturnAnalysis()), 
+            new ArrayList<>());
+
+        //check that step in for loop is no declaration
+        this.program.accept(new RecursivePostorderVisitor<>(
+            new ForLoopStepAnalysis()), 
+            new ForLoopStepAnalysis.StepType());
+
+        //check that all break/continue statements are inside of a loop
+        this.program.accept(new RecursivePostorderVisitor<>(
+            new BreakContinueAnalysis()), 
+            new BreakContinueAnalysis.JumpUsage());
 
         //check variable scopes
         Namespace<VariableStatusAnalysis.VariableStatus>[] namespaces = new Namespace[this.program.scopes().size()];
@@ -34,10 +48,14 @@ public class SemanticAnalysis {
         }
 
         //check variable initialization/declaration
-        this.program.accept(new RecursivePostorderVisitor<>(new VariableStatusAnalysis()), namespaces);
+        this.program.accept(new RecursivePostorderVisitor<>(
+            new VariableStatusAnalysis()), 
+            namespaces);
 
         //check types
-        this.program.accept(new RecursivePostorderVisitor<>(new TypeAnalysis()), new TypeContext(this.program.scopes().size()));
+        this.program.accept(new RecursivePostorderVisitor<>(
+            new TypeAnalysis()), 
+            new TypeContext(this.program.scopes().size()));
     }
 
 }

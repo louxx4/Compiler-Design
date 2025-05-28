@@ -48,6 +48,8 @@ public class Parser {
     private final TokenSource tokenSource;
     private final Stack<Scope> currentScope = new Stack(); //manages the current scope
     private final List<Scope> scopes = new ArrayList<>(); //will hold tree of block/function scopes
+    private final Stack<Integer> currentLoop = new Stack<>(); //used to assign break/continue to loop
+    private int loopCounter = 0;
 
     public Parser(TokenSource tokenSource) {
         this.tokenSource = tokenSource;
@@ -139,17 +141,21 @@ public class Parser {
         Keyword _while = this.tokenSource.expectKeyword(KeywordType.WHILE);
         this.tokenSource.expectSeparator(SeparatorType.PAREN_OPEN);
         enterNewScope(); //own scope for loop variables
+        enterNewLoop(); //register loop to assign break/continue to
         ExpressionTree expr = parseExpression();
         this.tokenSource.expectSeparator(SeparatorType.PAREN_CLOSE);
         StatementTree statement = parseStatement();
+        WhileLoopTree t = new WhileLoopTree(expr, statement, getLoop(), _while.span().start());
         leaveScope(); //leave loop scope
-        return new WhileLoopTree(expr, statement, _while.span().start());
+        leaveLoop();
+        return t;
     }
 
     private ForLoopTree parseForLoopTree() {
         Keyword _for = this.tokenSource.expectKeyword(KeywordType.FOR);
         this.tokenSource.expectSeparator(SeparatorType.PAREN_OPEN);
         enterNewScope(); //own scope for loop variables
+        enterNewLoop(); //register loop to assign break/continue to
         SimpleTree init = null, advancement = null;
         if(!this.tokenSource.peek().isSeparator(SeparatorType.SEMICOLON)) {
             init = parseSimple();
@@ -160,8 +166,10 @@ public class Parser {
         }
         this.tokenSource.expectSeparator(SeparatorType.PAREN_CLOSE);
         StatementTree body = parseStatement();
+        ForLoopTree t = new ForLoopTree(init, condition, advancement, body, getLoop(), _for.span().start());
         leaveScope(); //leave loop scope
-        return new ForLoopTree(init, condition, advancement, body, _for.span().start());
+        leaveLoop();
+        return t;
     }
 
     private SimpleTree parseSimple() {
@@ -224,12 +232,12 @@ public class Parser {
 
     private StatementTree parseContinue() {
         Keyword keyword = this.tokenSource.expectKeyword(KeywordType.CONTINUE);
-        return new JumpTree(JumpType.CONTINUE, keyword.span());
+        return new JumpTree(JumpType.CONTINUE, getLoop(), keyword.span());
     }
 
     private StatementTree parseBreak() {
         Keyword keyword = this.tokenSource.expectKeyword(KeywordType.BREAK);
-        return new JumpTree(JumpType.BREAK, keyword.span());
+        return new JumpTree(JumpType.BREAK, getLoop(), keyword.span());
     }
 
     //Conditional expression (or higher precedence)
@@ -436,8 +444,21 @@ public class Parser {
         this.currentScope.push(scope);
     }
 
+    private void enterNewLoop() {
+        this.currentLoop.add(this.loopCounter++);
+    }
+
     private void leaveScope() {
         this.currentScope.pop();
+    }
+
+    private void leaveLoop() {
+        this.currentLoop.pop();
+    }
+
+    private int getLoop() {
+        if(!this.currentLoop.empty()) return this.currentLoop.peek();
+        else return -1;
     }
 
     private int getScopeId() {
