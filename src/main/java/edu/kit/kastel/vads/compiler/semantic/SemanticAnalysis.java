@@ -1,5 +1,7 @@
 package edu.kit.kastel.vads.compiler.semantic;
 
+import java.util.ArrayList;
+
 import edu.kit.kastel.vads.compiler.parser.Scope;
 import edu.kit.kastel.vads.compiler.parser.ast.ProgramTree;
 import edu.kit.kastel.vads.compiler.parser.visitor.RecursivePostorderVisitor;
@@ -17,7 +19,7 @@ public class SemanticAnalysis {
         this.program.accept(new RecursivePostorderVisitor<>(new IntegerLiteralRangeAnalysis()), new Namespace<>());
 
         //check for return
-        this.program.accept(new RecursivePostorderVisitor<>(new ReturnAnalysis()), new ReturnAnalysis.ReturnState());
+        this.program.accept(new RecursivePostorderVisitor<>(new ReturnAnalysis()), new ArrayList<>());
 
         //check variable scopes
         Namespace<VariableStatusAnalysis.VariableStatus>[] namespaces = new Namespace[this.program.scopes().size()];
