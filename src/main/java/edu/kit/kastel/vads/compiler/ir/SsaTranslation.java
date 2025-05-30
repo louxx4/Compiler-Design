@@ -15,18 +15,27 @@ import edu.kit.kastel.vads.compiler.ir.util.DebugInfoHelper;
 import edu.kit.kastel.vads.compiler.parser.ast.AssignmentTree;
 import edu.kit.kastel.vads.compiler.parser.ast.BinaryOperationTree;
 import edu.kit.kastel.vads.compiler.parser.ast.BlockTree;
+import edu.kit.kastel.vads.compiler.parser.ast.BooleanTree;
+import edu.kit.kastel.vads.compiler.parser.ast.ConditionalTree;
 import edu.kit.kastel.vads.compiler.parser.ast.DeclarationTree;
+import edu.kit.kastel.vads.compiler.parser.ast.ForLoopTree;
 import edu.kit.kastel.vads.compiler.parser.ast.FunctionTree;
 import edu.kit.kastel.vads.compiler.parser.ast.IdentExpressionTree;
+import edu.kit.kastel.vads.compiler.parser.ast.IfStatementTree;
+import edu.kit.kastel.vads.compiler.parser.ast.JumpTree;
 import edu.kit.kastel.vads.compiler.parser.ast.LValueIdentTree;
 import edu.kit.kastel.vads.compiler.parser.ast.LiteralTree;
+import edu.kit.kastel.vads.compiler.parser.ast.LogicalOperationTree;
 import edu.kit.kastel.vads.compiler.parser.ast.NameTree;
+import edu.kit.kastel.vads.compiler.parser.ast.NegateBWTree;
 import edu.kit.kastel.vads.compiler.parser.ast.NegateTree;
+import edu.kit.kastel.vads.compiler.parser.ast.NotTree;
 import edu.kit.kastel.vads.compiler.parser.ast.ProgramTree;
 import edu.kit.kastel.vads.compiler.parser.ast.ReturnTree;
 import edu.kit.kastel.vads.compiler.parser.ast.StatementTree;
 import edu.kit.kastel.vads.compiler.parser.ast.Tree;
 import edu.kit.kastel.vads.compiler.parser.ast.TypeTree;
+import edu.kit.kastel.vads.compiler.parser.ast.WhileLoopTree;
 import edu.kit.kastel.vads.compiler.parser.symbol.Name;
 import edu.kit.kastel.vads.compiler.parser.visitor.Visitor;
 
@@ -43,7 +52,7 @@ public class SsaTranslation {
 
     public SsaTranslation(FunctionTree function, Optimizer optimizer) {
         this.function = function;
-        this.constructor = new GraphConstructor(optimizer, function.name().name().asString());
+        this.constructor = new GraphConstructor(optimizer, function.nameTree().name().asString());
     }
 
     public IrGraph translate() {
@@ -224,6 +233,51 @@ public class SsaTranslation {
             Node projSideEffect = data.constructor.newSideEffectProj(divMod);
             data.constructor.writeCurrentSideEffect(projSideEffect);
             return data.constructor.newResultProj(divMod);
+        }
+
+        @Override
+        public Optional<Node> visit(IfStatementTree ifStatementTree, SsaTranslation data) {
+            throw new UnsupportedOperationException("Not supported yet."); //TODO
+        }
+
+        @Override
+        public Optional<Node> visit(WhileLoopTree whileLoopTree, SsaTranslation data) {
+            throw new UnsupportedOperationException("Not supported yet."); //TODO
+        }
+
+        @Override
+        public Optional<Node> visit(ForLoopTree forLoopTree, SsaTranslation data) {
+            throw new UnsupportedOperationException("Not supported yet."); //TODO
+        }
+
+        @Override
+        public Optional<Node> visit(BooleanTree booleanTree, SsaTranslation data) {
+            throw new UnsupportedOperationException("Not supported yet."); //TODO
+        }
+
+        @Override
+        public Optional<Node> visit(NegateBWTree negateBWTree, SsaTranslation data) {
+            throw new UnsupportedOperationException("Not supported yet."); //TODO
+        }
+
+        @Override
+        public Optional<Node> visit(ConditionalTree conditionalTree, SsaTranslation data) {
+            throw new UnsupportedOperationException("Not supported yet."); //TODO
+        }
+
+        @Override
+        public Optional<Node> visit(JumpTree jumpTree, SsaTranslation data) {
+            throw new UnsupportedOperationException("Not supported yet."); //TODO
+        }
+
+        @Override
+        public Optional<Node> visit(NotTree notTree, SsaTranslation data) {
+            throw new UnsupportedOperationException("Not supported yet."); //TODO
+        }
+
+        @Override
+        public Optional<Node> visit(LogicalOperationTree logicalOperationTree, SsaTranslation data) {
+            throw new UnsupportedOperationException("Not supported yet."); //TODO
         }
     }
 

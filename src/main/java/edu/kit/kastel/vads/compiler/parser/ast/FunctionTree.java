@@ -3,7 +3,7 @@ package edu.kit.kastel.vads.compiler.parser.ast;
 import edu.kit.kastel.vads.compiler.Span;
 import edu.kit.kastel.vads.compiler.parser.visitor.Visitor;
 
-public record FunctionTree(TypeTree returnType, NameTree name, BlockTree body) implements Tree {
+public record FunctionTree(TypeTree returnType, NameTree nameTree, BlockTree body) implements Tree {
     @Override
     public Span span() {
         return new Span.SimpleSpan(returnType().span().start(), body().span().end());

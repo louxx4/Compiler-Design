@@ -43,7 +43,7 @@ class ReturnAnalysis implements NoOpVisitor<List<Tree>> {
     @Override
     public Unit visit(FunctionTree functionTree, List<Tree> returningTrees) {
         if (!returningTrees.contains(functionTree.body())) {
-            throw new SemanticException("function " + functionTree.name() + " does not return");
+            throw new SemanticException("function " + functionTree.nameTree() + " does not return");
         }
         returningTrees.add(functionTree);
         return NoOpVisitor.super.visit(functionTree, returningTrees);

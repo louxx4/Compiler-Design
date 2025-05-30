@@ -30,7 +30,7 @@ public class BreakContinueAnalysis implements NoOpVisitor<BreakContinueAnalysis.
     @Override
     public Unit visit(FunctionTree functionTree, JumpUsage data) {
         if(data.usageOutsideLoop) {
-            throw new SemanticException("Function " + functionTree.name().name() + " contains a " + 
+            throw new SemanticException("Function " + functionTree.nameTree().name() + " contains a " + 
                 data.type.name() + "-statement outside of a loop (position: " + data.position + ")");
         }
         return NoOpVisitor.super.visit(functionTree, data);

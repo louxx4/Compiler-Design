@@ -211,7 +211,7 @@ class TypeAnalysis implements NoOpVisitor<TypeContext> {
     }
 
     private static void signalInvalidFunction(FunctionTree tree, TypeStatus is) {
-        throw new SemanticException("invalid function " + tree.name().name() + " at " + tree.span() + 
+        throw new SemanticException("invalid function " + tree.nameTree().name() + " at " + tree.span() + 
                     ": type is " + is.name());
     }
 

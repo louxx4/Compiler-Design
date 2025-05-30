@@ -27,7 +27,7 @@ public class ForLoopStepAnalysis implements NoOpVisitor<ForLoopStepAnalysis.Step
     @Override
     public Unit visit(FunctionTree functionTree, StepType data) {
         if(data.hasDeclarationStep) {
-            throw new SemanticException("Function " + functionTree.name().name() + 
+            throw new SemanticException("Function " + functionTree.nameTree().name() + 
                 " contains a for loop whose step is a declaration (position: " + data.position + ")");
         }
         return NoOpVisitor.super.visit(functionTree, data);
