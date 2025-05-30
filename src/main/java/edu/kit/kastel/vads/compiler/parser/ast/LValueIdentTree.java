@@ -3,10 +3,10 @@ package edu.kit.kastel.vads.compiler.parser.ast;
 import edu.kit.kastel.vads.compiler.Span;
 import edu.kit.kastel.vads.compiler.parser.visitor.Visitor;
 
-public record LValueIdentTree(NameTree name) implements LValueTree {
+public record LValueIdentTree(NameTree nameTree) implements LValueTree {
     @Override
     public Span span() {
-        return name().span();
+        return nameTree().span();
     }
 
     @Override

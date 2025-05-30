@@ -9,27 +9,7 @@ movq %rax, %rdi
 movq $0x3C, %rax
 syscall
 _main:
-mov $69, %eax
-mov $420, %r12d
-cltq
-cqto
-idiv %r12d
-mov %edx, %r12d
-mov $420, %eax
-cltq
-cqto
-idiv %r12d
-mov %edx, %r13d
+mov $1, %r12d
 mov %r12d, %eax
-cltq
-cqto
-idiv %r13d
-mov %edx, %r14d
-mov %r13d, %eax
-cltq
-cqto
-idiv %r14d
-mov %edx, %r12d
-mov %r14d, %eax
 cltq
 ret

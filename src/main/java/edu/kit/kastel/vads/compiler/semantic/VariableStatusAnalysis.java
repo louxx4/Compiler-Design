@@ -1,11 +1,9 @@
 package edu.kit.kastel.vads.compiler.semantic;
 
-import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
 import edu.kit.kastel.vads.compiler.lexer.Operator;
-import edu.kit.kastel.vads.compiler.parser.Scope;
 import edu.kit.kastel.vads.compiler.parser.ast.AssignmentTree;
 import edu.kit.kastel.vads.compiler.parser.ast.BlockTree;
 import edu.kit.kastel.vads.compiler.parser.ast.DeclarationTree;
@@ -32,18 +30,8 @@ import edu.kit.kastel.vads.compiler.parser.visitor.Unit;
 //      (2) is initialized in all control paths within the inner block
 class VariableStatusAnalysis implements NoOpVisitor<Namespace<VariableStatusAnalysis.VariableStatus>[]> {
 
-    public static Namespace<VariableStatus>[] initializeNamespaces(List<Scope> scopes) {
-        Namespace<VariableStatus>[] namespaces = new Namespace[scopes.size()];
-        //initialization: create namespace for each scope
-        for(Scope scope : scopes) {
-            namespaces[scope.getId()] = new Namespace<>();
-        }
-        //if present, set parent as enclosing namespace
-        for(Scope scope : scopes) {
-            if(scope.hasParent()) namespaces[scope.getId()].
-                setEnclosingNamespace(namespaces[scope.getParent().getId()]);
-        }
-        return namespaces;
+    public static Namespace<VariableStatus>[] getNamespaces(int size) {
+        return new Namespace[size];
     }
  
     @Override
@@ -141,24 +129,27 @@ class VariableStatusAnalysis implements NoOpVisitor<Namespace<VariableStatusAnal
     private static VariableStatus checkDeclared(NameTree name, Namespace<VariableStatus> namespace) {
         VariableStatus status = namespace.get(name);
         if (status == null) { // = defined in none of the enclosing namespaces
-            throw new SemanticException("Variable " + name + " must be declared before assignment");
+            throw new SemanticException("Variable " + name.name().toString() + 
+                " must be declared before assignment");
         }
         return status;
     }
 
     // Checks whether variable was already initialized in the provided namespace or in one of 
     // its enclosing namespaces
-    private static VariableStatus checkInitialized(NameTree name, Namespace<VariableStatus> namespace) {
-        VariableStatus status = namespace.get(name);
+    private static VariableStatus checkInitialized(NameTree nameTree, Namespace<VariableStatus> namespace) {
+        VariableStatus status = namespace.get(nameTree);
         if (status == null || status == VariableStatus.DECLARED) {
-            throw new SemanticException("Variable " + name + " must be initialized before use");
+            throw new SemanticException("Variable " + nameTree.name().asString() + 
+                " must be initialized before use");
         }
         return status;
     }
 
-    private static void checkUndeclared(NameTree name, Namespace<VariableStatus> namespace) {
-        if (namespace.get(name) != null) {
-            throw new SemanticException("Variable " + name + " is already declared");
+    private static void checkUndeclared(NameTree nameTree, Namespace<VariableStatus> namespace) {
+        if (namespace.get(nameTree) != null) {
+            throw new SemanticException("Variable " + nameTree.name().asString() + 
+                " is already declared");
         }
     }
 
@@ -176,9 +167,9 @@ class VariableStatusAnalysis implements NoOpVisitor<Namespace<VariableStatusAnal
 
     private static void putStatus(Namespace<VariableStatus> namespace, Name name, VariableStatus status) {
         namespace.put(name, status, (existing, replacement) -> {
-            if (existing.ordinal() >= replacement.ordinal()) {
-                throw new SemanticException("namespace " + namespace + 
-                    ": variable is already " + existing + ". Cannot be " + replacement + " here.");
+            if (existing.ordinal() > replacement.ordinal()) {
+                throw new SemanticException("variable " + name.asString() + " is already " + 
+                    existing.name() + ". Cannot be " + replacement.name() + " here.");
             }
             return replacement;
         });

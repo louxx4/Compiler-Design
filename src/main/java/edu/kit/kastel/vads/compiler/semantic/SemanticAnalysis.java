@@ -1,7 +1,9 @@
 package edu.kit.kastel.vads.compiler.semantic;
 
 import java.util.ArrayList;
+import java.util.List;
 
+import edu.kit.kastel.vads.compiler.parser.Scope;
 import edu.kit.kastel.vads.compiler.parser.ast.ProgramTree;
 import edu.kit.kastel.vads.compiler.parser.visitor.RecursivePostorderVisitor;
 
@@ -37,12 +39,35 @@ public class SemanticAnalysis {
         //check variable initialization/declaration
         this.program.accept(new RecursivePostorderVisitor<>(
             new VariableStatusAnalysis()), 
-            VariableStatusAnalysis.initializeNamespaces(this.program.scopes()));
+            initializeNamespaces(
+                VariableStatusAnalysis.getNamespaces(this.program.scopes().size()), 
+                this.program.scopes()
+            ));
 
         //check types
         this.program.accept(new RecursivePostorderVisitor<>(
             new TypeAnalysis()), 
-            new TypeContext(this.program.scopes().size()));
+            new TypeContext(
+                initializeNamespaces(
+                    TypeAnalysis.getNamespaces(this.program.scopes().size()), 
+                    this.program.scopes()
+                )
+            )
+        );
+    }
+
+    private static <T> Namespace<T>[] initializeNamespaces(Namespace<T>[] namespaces, List<Scope> scopes) {
+        //initialization: create namespace for each scope
+        for(Scope scope : scopes) {
+            namespaces[scope.getId()] = new Namespace<>();
+        }
+        
+        //if present, set parent as enclosing namespace
+        for(Scope scope : scopes) {
+            if(scope.hasParent()) namespaces[scope.getId()].
+                setEnclosingNamespace(namespaces[scope.getParent().getId()]);
+        }
+        return namespaces;
     }
 
 }

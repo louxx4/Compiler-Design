@@ -1,24 +1,4 @@
-1: mov $69, %eax              {live: }
-2: mov $420, %t3              {live: }
-3: cltq                       {live: %t3}
-4: cqto                       {live: %t3}
-5: idiv %t3                   {live: %t3}
-6: mov %edx, %t3              {live: }
-7: mov $420, %eax             {live: %t3}
-8: cltq                       {live: %t3}
-9: cqto                       {live: %t3}
-10: idiv %t3                  {live: %t3}
-11: mov %edx, %t2             {live: %t3}
-12: mov %t3, %eax             {live: %t3,%t2}
-13: cltq                      {live: %t2}
-14: cqto                      {live: %t2}
-15: idiv %t2                  {live: %t2}
-16: mov %edx, %t1             {live: %t2}
-17: mov %t2, %eax             {live: %t2,%t1}
-18: cltq                      {live: %t1}
-19: cqto                      {live: %t1}
-20: idiv %t1                  {live: %t1}
-21: mov %edx, %t0             {live: %t1}
-22: mov %t1, %eax             {live: %t1}
-23: cltq                      {live: }
-24: ret                       {live: }
+1: mov $1, %t0                {live: }
+2: mov %t0, %eax              {live: %t0}
+3: cltq                       {live: }
+4: ret                        {live: }

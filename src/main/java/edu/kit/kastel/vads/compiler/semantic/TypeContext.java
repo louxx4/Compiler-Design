@@ -9,13 +9,10 @@ import edu.kit.kastel.vads.compiler.parser.symbol.Name;
 public class TypeContext {
 
     private final Map<Tree,TypeAnalysis.TypeStatus> global_context = new HashMap(); //maps trees (except NameTree) to types (is not scope sensitive)
-    private final Map<Name,TypeAnalysis.TypeStatus>[] scope_context; //maps name to type (is scope sensitive)
+    private final Namespace<TypeAnalysis.TypeStatus>[] scope_context; //maps name to type (is scope sensitive)
 
-    public TypeContext(int amountOfScopes) {
-        this.scope_context = new Map[amountOfScopes];
-        for(int i = 0; i < amountOfScopes; i++) {
-            this.scope_context[i] = new HashMap<>();
-        }     
+    public TypeContext(Namespace<TypeAnalysis.TypeStatus>[] namespaces) {
+        this.scope_context = namespaces; 
     }
 
     public TypeAnalysis.TypeStatus get(Tree tree) {
@@ -31,7 +28,9 @@ public class TypeContext {
     }
 
     public void put(Name name, TypeAnalysis.TypeStatus type, int scope) {
-        this.scope_context[scope].put(name, type);
+        this.scope_context[scope].put(name, type, (existing, replacement) -> {
+            return replacement;
+        });
     }
     
 }

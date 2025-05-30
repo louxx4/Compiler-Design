@@ -97,6 +97,7 @@ public class Parser {
 
     private StatementTree parseStatement() {
         StatementTree statement;
+        boolean expectSemicolon = true;
         Token next = this.tokenSource.peek();
         if (next.isKeyword(KeywordType.INT)) {
             statement = parseDeclaration(KeywordType.INT);
@@ -106,20 +107,24 @@ public class Parser {
             statement = parseReturn();
         } else if (next.isKeyword(KeywordType.IF)) {
             statement = parseIfStatement();
+            expectSemicolon = false;
         } else if (next.isKeyword(KeywordType.FOR)) {
             statement = parseForLoopTree();
+            expectSemicolon = false;
         } else if (next.isKeyword(KeywordType.WHILE)) {
             statement = parseWhileLoop();
+            expectSemicolon = false;
         } else if (next.isKeyword(KeywordType.CONTINUE)) {
             statement = parseContinue();
         } else if (next.isKeyword(KeywordType.BREAK)) {
             statement = parseBreak();
         } else if (next.isSeparator(SeparatorType.BRACE_OPEN)) {
             statement = parseBlock();
+            expectSemicolon = false;
         } else {
             statement = parseSimple();
         }
-        this.tokenSource.expectSeparator(SeparatorType.SEMICOLON);
+        if(expectSemicolon) this.tokenSource.expectSeparator(SeparatorType.SEMICOLON);
         return statement;
     }
 
@@ -148,9 +153,9 @@ public class Parser {
     private WhileLoopTree parseWhileLoop() {
         Keyword _while = this.tokenSource.expectKeyword(KeywordType.WHILE);
         this.tokenSource.expectSeparator(SeparatorType.PAREN_OPEN);
+        ExpressionTree expr = parseExpression();
         enterNewScope(); //own scope for loop variables
         enterNewLoop(); //register loop to assign break/continue to
-        ExpressionTree expr = parseExpression();
         this.tokenSource.expectSeparator(SeparatorType.PAREN_CLOSE);
         StatementTree statement = parseStatement();
         WhileLoopTree t = new WhileLoopTree(expr, statement, getLoop(), _while.span().start());
@@ -168,7 +173,9 @@ public class Parser {
         if(!this.tokenSource.peek().isSeparator(SeparatorType.SEMICOLON)) {
             init = parseSimple();
         }
+        this.tokenSource.expectSeparator(SeparatorType.SEMICOLON);
         ExpressionTree condition = parseExpression();
+        this.tokenSource.expectSeparator(SeparatorType.SEMICOLON);
         if(!this.tokenSource.peek().isSeparator(SeparatorType.PAREN_CLOSE)) {
             advancement = parseSimple();
         }

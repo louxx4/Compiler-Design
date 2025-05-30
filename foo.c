@@ -1,23 +1,8 @@
-int main() {
-int a = 69;
-int b = 420;
-int t;
-
-t = b;
-b = a % b;
-a = t;
-
-t = b;
-b = a % b;
-a = t;
-
-t = b;
-b = a % b;
-a = t;
-
-t = b;
-b = a % b;
-a = t;
-
-return a;
+int main() { 
+    int x = 1;
+    int y;
+    while(x == 0) {
+        y = 3;
+    }
+    return 1;
 }

@@ -90,9 +90,9 @@ public class RecursivePostorderVisitor<T, R> implements Visitor<T, R> {
     @Override
     public R visit(ForLoopTree forLoopTree, T data) {
         R r = forLoopTree.initialization().accept(this, data);
-        r = forLoopTree.condition().accept(visitor, accumulate(data, r));
-        r = forLoopTree.advancement().accept(visitor, accumulate(data, r));
-        r = forLoopTree.body().accept(visitor, accumulate(data, r));
+        r = forLoopTree.condition().accept(this, accumulate(data, r));
+        r = forLoopTree.advancement().accept(this, accumulate(data, r));
+        r = forLoopTree.body().accept(this, accumulate(data, r));
         r = this.visitor.visit(forLoopTree, accumulate(data, r));
         return r;
     }    
@@ -116,8 +116,8 @@ public class RecursivePostorderVisitor<T, R> implements Visitor<T, R> {
     @Override
     public R visit(IfStatementTree ifStatementTree, T data) {
         R r = ifStatementTree.expression().accept(this, data);
-        r = ifStatementTree.if_body().accept(visitor, accumulate(data, r));
-        r = ifStatementTree.else_body().accept(visitor, accumulate(data, r));
+        r = ifStatementTree.if_body().accept(this, accumulate(data, r));
+        r = ifStatementTree.else_body().accept(this, accumulate(data, r));
         r = this.visitor.visit(ifStatementTree, accumulate(data, r));
         return r;
     }
@@ -142,7 +142,7 @@ public class RecursivePostorderVisitor<T, R> implements Visitor<T, R> {
 
     @Override
     public R visit(LValueIdentTree lValueIdentTree, T data) {
-        R r = lValueIdentTree.name().accept(this, data);
+        R r = lValueIdentTree.nameTree().accept(this, data);
         r = this.visitor.visit(lValueIdentTree, accumulate(data, r));
         return r;
     }
@@ -200,7 +200,7 @@ public class RecursivePostorderVisitor<T, R> implements Visitor<T, R> {
     @Override
     public R visit(WhileLoopTree whileLoopTree, T data) {
         R r = whileLoopTree.expression().accept(this, data);
-        r = whileLoopTree.statement().accept(visitor, accumulate(data, r));
+        r = whileLoopTree.statement().accept(this, accumulate(data, r));
         r = this.visitor.visit(whileLoopTree, accumulate(data, r));
         return r;
     }  

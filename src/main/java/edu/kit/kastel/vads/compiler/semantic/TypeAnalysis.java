@@ -2,6 +2,8 @@ package edu.kit.kastel.vads.compiler.semantic;
 
 import java.util.List;
 
+import org.jspecify.annotations.Nullable;
+
 import edu.kit.kastel.vads.compiler.lexer.Operator.OperatorType;
 import edu.kit.kastel.vads.compiler.parser.ast.AssignmentTree;
 import edu.kit.kastel.vads.compiler.parser.ast.BinaryOperationTree;
@@ -11,7 +13,9 @@ import edu.kit.kastel.vads.compiler.parser.ast.ConditionalTree;
 import edu.kit.kastel.vads.compiler.parser.ast.DeclarationTree;
 import edu.kit.kastel.vads.compiler.parser.ast.ForLoopTree;
 import edu.kit.kastel.vads.compiler.parser.ast.FunctionTree;
+import edu.kit.kastel.vads.compiler.parser.ast.IdentExpressionTree;
 import edu.kit.kastel.vads.compiler.parser.ast.IfStatementTree;
+import edu.kit.kastel.vads.compiler.parser.ast.LValueIdentTree;
 import edu.kit.kastel.vads.compiler.parser.ast.LiteralTree;
 import edu.kit.kastel.vads.compiler.parser.ast.LogicalOperationTree;
 import edu.kit.kastel.vads.compiler.parser.ast.NegateBWTree;
@@ -20,8 +24,10 @@ import edu.kit.kastel.vads.compiler.parser.ast.NotTree;
 import edu.kit.kastel.vads.compiler.parser.ast.ReturnTree;
 import edu.kit.kastel.vads.compiler.parser.ast.StatementTree;
 import edu.kit.kastel.vads.compiler.parser.ast.Tree;
+import edu.kit.kastel.vads.compiler.parser.ast.TypeTree;
 import edu.kit.kastel.vads.compiler.parser.ast.WhileLoopTree;
 import edu.kit.kastel.vads.compiler.parser.symbol.Name;
+import edu.kit.kastel.vads.compiler.parser.type.BasicType;
 import edu.kit.kastel.vads.compiler.parser.visitor.NoOpVisitor;
 import edu.kit.kastel.vads.compiler.parser.visitor.Unit;
 
@@ -33,12 +39,20 @@ class TypeAnalysis implements NoOpVisitor<TypeContext> {
         INT, BOOL, VALID
     }
 
+    public static Namespace<TypeStatus>[] getNamespaces(int size) {
+        return new Namespace[size];
+    }
+
     private static final List<OperatorType> INT_TO_BOOL_OPERATIONS = List.of(
         OperatorType.LESS, OperatorType.LEQ, OperatorType.GREATER, OperatorType.GEQ);
 
     @Override
     public Unit visit(AssignmentTree assignmentTree, TypeContext context) {
-        TypeStatus t1 = context.get(assignmentTree.lValue());
+        TypeStatus t1;
+        switch(assignmentTree.lValue()) {
+            case LValueIdentTree identTree -> 
+                t1 = context.get(identTree.nameTree().name(), assignmentTree.block());
+        }
         TypeStatus t2 = context.get(assignmentTree.expression());
         if(t1 != t2) signalMismatchingOperands(assignmentTree, t1, t2);
         context.put(assignmentTree, TypeStatus.VALID);
@@ -85,7 +99,7 @@ class TypeAnalysis implements NoOpVisitor<TypeContext> {
     //Γ,𝑥 : 𝜏 ⊢ 𝑠 𝑣𝑎𝑙𝑖𝑑  is checked later on
     @Override
     public Unit visit(DeclarationTree declarationTree, TypeContext context) {
-        TypeStatus t = context.get(declarationTree.type());
+        TypeStatus t = getTypeFromTypeTree(declarationTree.type());
         Name name = declarationTree.nameTree().name();
         int scope = declarationTree.block();
         TypeStatus t_name = context.get(name, scope); // 𝑥 : 𝜏′ ∉ Γ for any 𝜏′
@@ -109,7 +123,7 @@ class TypeAnalysis implements NoOpVisitor<TypeContext> {
         // check condition & body
         TypeStatus t_c = context.get(forLoopTree.condition());
         if(t_c != TypeStatus.BOOL) signalInvalidExpression(forLoopTree, t_c, TypeStatus.BOOL);
-        TypeStatus t_body = context.get(forLoopTree.condition());
+        TypeStatus t_body = context.get(forLoopTree.body());
         if(t_body != TypeStatus.VALID) signalInvalidExpression(forLoopTree, t_body, TypeStatus.VALID);
         // advancement may be null
         if(forLoopTree.advancement() != null) {
@@ -126,6 +140,15 @@ class TypeAnalysis implements NoOpVisitor<TypeContext> {
         if(t != TypeStatus.VALID) signalInvalidFunction(functionTree, t);
         context.put(functionTree, TypeStatus.VALID);
         return NoOpVisitor.super.visit(functionTree, context);
+    }
+
+    @Override
+    public Unit visit(IdentExpressionTree identExpressionTree, TypeContext context) {
+        int scope = identExpressionTree.block();
+        Name name = identExpressionTree.nameTree().name();
+        TypeStatus t = context.get(name, scope);
+        context.put(identExpressionTree, t);
+        return NoOpVisitor.super.visit(identExpressionTree, context);
     }
     
     @Override
@@ -149,13 +172,16 @@ class TypeAnalysis implements NoOpVisitor<TypeContext> {
     @Override
     public Unit visit(LogicalOperationTree logicalOperationTree, TypeContext context) {
         OperatorType operator = logicalOperationTree.operatorType();
+        TypeStatus t1 = switch(logicalOperationTree.lhs()) {
+            case IdentExpressionTree(var nameTree, var block) -> 
+                context.get(nameTree.name(), block);
+            default -> context.get(logicalOperationTree.lhs());
+        };
         if (INT_TO_BOOL_OPERATIONS.contains(operator)) {
-            TypeStatus t1 = context.get(logicalOperationTree.lhs());
             if(t1 != TypeStatus.INT) signalInvalidOperand(logicalOperationTree, t1, TypeStatus.INT);
             TypeStatus t2 = context.get(logicalOperationTree.rhs());
             if(t2 != TypeStatus.INT) signalInvalidOperand(logicalOperationTree, t2, TypeStatus.INT);
         } else { // RANDOMTYPE_TO_BOOL_OPERATIONS
-            TypeStatus t1 = context.get(logicalOperationTree.lhs());
             TypeStatus t2 = context.get(logicalOperationTree.rhs());
             if(t1 != t2) signalMismatchingOperands(logicalOperationTree, t1, t2);
         }
@@ -211,8 +237,8 @@ class TypeAnalysis implements NoOpVisitor<TypeContext> {
     }
 
     private static void signalInvalidFunction(FunctionTree tree, TypeStatus is) {
-        throw new SemanticException("invalid function " + tree.nameTree().name() + " at " + tree.span() + 
-                    ": type is " + is.name());
+        throw new SemanticException("invalid function " + tree.nameTree().name().asString() + 
+            " at " + tree.span() + ": type is " + is.name());
     }
 
     private static void signalInvalidBlock(BlockTree tree, TypeStatus is) {
@@ -233,5 +259,13 @@ class TypeAnalysis implements NoOpVisitor<TypeContext> {
     private static void signalMismatchingExpressions(Tree tree, TypeStatus t1, TypeStatus t2) {
         throw new SemanticException("mismatched expression types at" + tree.span() + 
                 ": type " + t1.name() + " does not match " + t2.name());
+    }
+
+    private static @Nullable TypeStatus getTypeFromTypeTree(TypeTree typeTree) {
+        return switch(typeTree.type()) {
+            case BasicType.BOOL -> TypeStatus.BOOL;
+            case BasicType.INT  -> TypeStatus.INT;
+            default -> null;
+        };
     }
 }
