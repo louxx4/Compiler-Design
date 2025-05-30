@@ -92,7 +92,7 @@ class VariableStatusAnalysis implements NoOpVisitor<Namespace<VariableStatusAnal
 
     @Override
     public Unit visit(IdentExpressionTree identExpressionTree, Namespace<VariableStatus>[] data) {
-        checkInitialized(identExpressionTree.name(), data[identExpressionTree.block()]);
+        checkInitialized(identExpressionTree.nameTree(), data[identExpressionTree.block()]);
         return NoOpVisitor.super.visit(identExpressionTree, data);
     }
 

@@ -144,7 +144,7 @@ public class SsaTranslation {
             pushSpan(declarationTree);
             if (declarationTree.initializer() != null) {
                 Node rhs = declarationTree.initializer().accept(this, data).orElseThrow();
-                data.writeVariable(declarationTree.name().name(), data.currentBlock(), rhs);
+                data.writeVariable(declarationTree.nameTree().name(), data.currentBlock(), rhs);
             }
             popSpan();
             return NOT_AN_EXPRESSION;
@@ -163,7 +163,7 @@ public class SsaTranslation {
         @Override
         public Optional<Node> visit(IdentExpressionTree identExpressionTree, SsaTranslation data) {
             pushSpan(identExpressionTree);
-            Node value = data.readVariable(identExpressionTree.name().name(), data.currentBlock());
+            Node value = data.readVariable(identExpressionTree.nameTree().name(), data.currentBlock());
             popSpan();
             return Optional.of(value);
         }
