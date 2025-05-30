@@ -6,7 +6,10 @@ import edu.kit.kastel.vads.compiler.Position;
 import edu.kit.kastel.vads.compiler.Span;
 import edu.kit.kastel.vads.compiler.parser.visitor.Visitor;
 
-public record IfStatementTree(ExpressionTree expression, StatementTree if_body, @Nullable StatementTree else_body, Position start) implements ControlTree {
+// block = unique identifier of enclosing block
+public record IfStatementTree(ExpressionTree expression, StatementTree if_body, 
+    @Nullable StatementTree else_body, int block_if, int block_else, 
+    Position start) implements ControlTree {
 
     @Override
     public Span span() {
@@ -19,6 +22,10 @@ public record IfStatementTree(ExpressionTree expression, StatementTree if_body, 
     @Override
     public <T, R> R accept(Visitor<T, R> visitor, T data) {
         return visitor.visit(this, data);
+    }
+
+    public static boolean isValidBlock(int blockId) {
+        return blockId != -1;
     }
 
 }

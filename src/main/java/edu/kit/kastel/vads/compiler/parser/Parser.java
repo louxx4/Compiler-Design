@@ -81,18 +81,18 @@ public class Parser {
     }
 
     private BlockTree parseBlock() {
-        //adjust scope
         enterNewScope();
         //parse block
         Separator bodyOpen = this.tokenSource.expectSeparator(SeparatorType.BRACE_OPEN);
         List<StatementTree> statements = new ArrayList<>();
-        while (!(this.tokenSource.peek() instanceof Separator sep && sep.type() == SeparatorType.BRACE_CLOSE)) {
+        while (!(this.tokenSource.peek() instanceof Separator sep 
+            && sep.type() == SeparatorType.BRACE_CLOSE)) {
             statements.add(parseStatement());
         }
         Separator bodyClose = this.tokenSource.expectSeparator(SeparatorType.BRACE_CLOSE);
-        //readjust scope
+        BlockTree t = new BlockTree(statements, getScopeId(), bodyOpen.span().merge(bodyClose.span()));
         leaveScope();
-        return new BlockTree(statements, bodyOpen.span().merge(bodyClose.span()));
+        return t;
     }
 
     private StatementTree parseStatement() {
@@ -128,13 +128,21 @@ public class Parser {
         this.tokenSource.expectSeparator(SeparatorType.PAREN_OPEN);
         ExpressionTree expr = parseExpression();
         this.tokenSource.expectSeparator(SeparatorType.PAREN_CLOSE);
+        enterNewScope(); //for inside if-body variables
+        int innerScopeIf = getScopeId();
         StatementTree if_statement = parseStatement();
+        leaveScope();
         StatementTree else_statement = null;
+        int innerScopeElse = -1;
         if(this.tokenSource.peek().isKeyword(KeywordType.ELSE)) {
             this.tokenSource.expectKeyword(KeywordType.ELSE);
+            enterNewScope(); //for inside else-body variables
+            innerScopeElse = getScopeId();
             else_statement = parseStatement();
+            leaveScope();
         }
-        return new IfStatementTree(expr, if_statement, else_statement, _if.span().start());
+        return new IfStatementTree(expr, if_statement, else_statement, 
+            innerScopeIf, innerScopeElse, _if.span().start());
     }
 
     private WhileLoopTree parseWhileLoop() {
@@ -227,17 +235,17 @@ public class Parser {
     private StatementTree parseReturn() {
         Keyword ret = this.tokenSource.expectKeyword(KeywordType.RETURN);
         ExpressionTree expression = parseExpression();
-        return new ReturnTree(expression, ret.span().start());
+        return new ReturnTree(expression, getScopeId(), ret.span().start());
     }
 
     private StatementTree parseContinue() {
         Keyword keyword = this.tokenSource.expectKeyword(KeywordType.CONTINUE);
-        return new JumpTree(JumpType.CONTINUE, getLoop(), keyword.span());
+        return new JumpTree(JumpType.CONTINUE, getLoop(), getScopeId(), keyword.span());
     }
 
     private StatementTree parseBreak() {
         Keyword keyword = this.tokenSource.expectKeyword(KeywordType.BREAK);
-        return new JumpTree(JumpType.BREAK, getLoop(), keyword.span());
+        return new JumpTree(JumpType.BREAK, getLoop(), getScopeId(), keyword.span());
     }
 
     //Conditional expression (or higher precedence)

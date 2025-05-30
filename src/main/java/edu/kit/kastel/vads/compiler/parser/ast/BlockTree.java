@@ -1,11 +1,12 @@
 package edu.kit.kastel.vads.compiler.parser.ast;
 
+import java.util.List;
+
 import edu.kit.kastel.vads.compiler.Span;
 import edu.kit.kastel.vads.compiler.parser.visitor.Visitor;
 
-import java.util.List;
-
-public record BlockTree(List<StatementTree> statements, Span span) implements StatementTree {
+// block = unique identifier of the scope that this block defines
+public record BlockTree(List<StatementTree> statements, int block, Span span) implements StatementTree {
 
     public BlockTree {
         statements = List.copyOf(statements);

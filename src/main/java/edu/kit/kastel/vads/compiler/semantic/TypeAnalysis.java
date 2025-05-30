@@ -86,7 +86,7 @@ class TypeAnalysis implements NoOpVisitor<TypeContext> {
     @Override
     public Unit visit(DeclarationTree declarationTree, TypeContext context) {
         TypeStatus t = context.get(declarationTree.type());
-        Name name = declarationTree.name().name();
+        Name name = declarationTree.nameTree().name();
         int scope = declarationTree.block();
         TypeStatus t_name = context.get(name, scope); // 𝑥 : 𝜏′ ∉ Γ for any 𝜏′
         if(!(t_name == null || t_name == t)) signalMismatchingExpressions(declarationTree, t, t_name);

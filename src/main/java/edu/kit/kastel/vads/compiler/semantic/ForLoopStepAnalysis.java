@@ -7,6 +7,7 @@ import edu.kit.kastel.vads.compiler.parser.ast.FunctionTree;
 import edu.kit.kastel.vads.compiler.parser.visitor.NoOpVisitor;
 import edu.kit.kastel.vads.compiler.parser.visitor.Unit;
 
+// Checks that the step/advancement part of a for loop is no declaration
 public class ForLoopStepAnalysis implements NoOpVisitor<ForLoopStepAnalysis.StepType> {
 
     public static class StepType {

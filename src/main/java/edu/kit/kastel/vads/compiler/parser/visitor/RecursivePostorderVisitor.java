@@ -79,7 +79,7 @@ public class RecursivePostorderVisitor<T, R> implements Visitor<T, R> {
     @Override
     public R visit(DeclarationTree declarationTree, T data) {
         R r = declarationTree.type().accept(this, data);
-        r = declarationTree.name().accept(this, accumulate(data, r));
+        r = declarationTree.nameTree().accept(this, accumulate(data, r));
         if (declarationTree.initializer() != null) {
             r = declarationTree.initializer().accept(this, accumulate(data, r));
         }
