@@ -59,7 +59,7 @@ public class Parser {
         List functions = List.of(parseFunction());
         ProgramTree programTree = new ProgramTree(functions, this.scopes);
         if (this.tokenSource.hasMore()) {
-            throw new ParseException("expected end of input but got " + this.tokenSource.peek());
+            throw new ParseException("expected end of input but got " + this.tokenSource.peek().asString());
         }
         return programTree;
     }
@@ -68,7 +68,7 @@ public class Parser {
         Keyword returnType = this.tokenSource.expectKeyword(KeywordType.INT);
         Identifier identifier = this.tokenSource.expectIdentifier();
         if (!identifier.value().equals("main")) {
-            throw new ParseException("expected main function but got " + identifier);
+            throw new ParseException("expected main function but got " + identifier.asString());
         }
         this.tokenSource.expectSeparator(SeparatorType.PAREN_OPEN);
         this.tokenSource.expectSeparator(SeparatorType.PAREN_CLOSE);
@@ -443,7 +443,7 @@ public class Parser {
                 Span span = this.tokenSource.consume().span();
                 yield new BooleanTree(false, span);
             }
-            case Token t -> throw new ParseException("invalid factor " + t);
+            case Token t -> throw new ParseException("invalid factor " + t.asString());
         };
     }
 

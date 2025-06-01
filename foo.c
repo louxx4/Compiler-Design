@@ -1,8 +1,5 @@
-int main() { 
-    int x = 1;
-    int y;
-    while(x == 0) {
-        y = 3;
-    }
+int main()
+{
+    while() {return 10;}
     return 1;
 }

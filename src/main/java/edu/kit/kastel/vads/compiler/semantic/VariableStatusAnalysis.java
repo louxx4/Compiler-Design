@@ -129,7 +129,7 @@ class VariableStatusAnalysis implements NoOpVisitor<Namespace<VariableStatusAnal
     private static VariableStatus checkDeclared(NameTree name, Namespace<VariableStatus> namespace) {
         VariableStatus status = namespace.get(name);
         if (status == null) { // = defined in none of the enclosing namespaces
-            throw new SemanticException("Variable " + name.name().toString() + 
+            throw new SemanticException("Variable " + name.name().asString() + 
                 " must be declared before assignment");
         }
         return status;
