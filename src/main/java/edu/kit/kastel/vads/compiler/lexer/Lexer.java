@@ -44,6 +44,8 @@ public class Lexer {
             case '/' -> singleOrAssign(OperatorType.DIV, OperatorType.ASSIGN_DIV);
             case '%' -> singleOrAssign(OperatorType.MOD, OperatorType.ASSIGN_MOD);
             // changed/added in Lab 2
+            case '?' -> new Operator(OperatorType.QUESTIONMARK, buildSpan(1));
+            case ':' -> new Separator(SeparatorType.COLON, buildSpan(1));
             case '=' -> singleOrAssign(OperatorType.ASSIGN, OperatorType.EQ);
             case '!' -> singleOrAssign(OperatorType.NOT, OperatorType.NEQ);
             case '~' -> new Operator(OperatorType.NOT_BW, buildSpan(1));

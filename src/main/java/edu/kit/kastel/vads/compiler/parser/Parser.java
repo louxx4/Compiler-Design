@@ -222,10 +222,10 @@ public class Parser {
                     this.tokenSource.consume();
                     yield op;
                 }
-                default -> throw new ParseException("expected assignment but got " + op.type());
+                default -> throw new ParseException("expected assignment but got " + op.type().name());
             };
         }
-        throw new ParseException("expected assignment but got " + this.tokenSource.peek());
+        throw new ParseException("expected assignment but got " + this.tokenSource.peek().asString());
     }
 
     private LValueTree parseLValue() {
