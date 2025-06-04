@@ -4,5 +4,8 @@ public enum Pattern {
     STMT_STMT,
     CONST_LEFT,
     CONST_RIGHT,
-    CONST_CONST
+    CONST_CONST,
+    BOOL_LEFT,
+    BOOL_RIGHT,
+    BOOL_BOOL
 }

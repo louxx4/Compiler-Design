@@ -25,6 +25,10 @@ import edu.kit.kastel.vads.compiler.parser.ast.ProgramTree;
 import edu.kit.kastel.vads.compiler.semantic.SemanticAnalysis;
 import edu.kit.kastel.vads.compiler.semantic.SemanticException;
 
+//Build with:                   sh build.sh
+//Run with:                     sh run.sh foo.c foo
+//Generate executable with:     gcc asmfoo.s -o asmexe
+//Execute with:                 ./asmexe
 public class Main {
     @SuppressWarnings("CallToPrintStackTrace")
     public static void main(String[] args) throws IOException {
