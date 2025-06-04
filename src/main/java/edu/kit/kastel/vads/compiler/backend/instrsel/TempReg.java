@@ -7,14 +7,16 @@ public class TempReg extends Parameter {
     public final int id;
     public Register register;
     private boolean interferes = false;
+    private final RegisterSize size;
 
-    public TempReg (int id) {
+    public TempReg (int id, RegisterSize size) {
         this.id = id;
+        this.size = size;
     }
 
     @Override
     public String print(boolean debug) {
-        return "%" + (debug ? "t" + this.id : this.register.getName() + "d");
+        return "%" + (debug ? "t" + this.id : this.register.getName() + this.size.getSuffix());
     }
 
     public void setRegister(Register register) {
@@ -38,5 +40,20 @@ public class TempReg extends Parameter {
 
     public boolean interferes() {
         return this.interferes;
+    }
+
+    enum RegisterSize {
+        BYTE("b"),
+        DOUBLE_WORD("d");
+
+        private final String suffix;
+
+        private RegisterSize(String suffix) {
+            this.suffix = suffix;
+        }
+
+        public String getSuffix() {
+            return this.suffix;
+        }
     }
 }
