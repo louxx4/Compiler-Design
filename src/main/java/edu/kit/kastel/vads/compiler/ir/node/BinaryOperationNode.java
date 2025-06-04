@@ -1,6 +1,9 @@
 package edu.kit.kastel.vads.compiler.ir.node;
 
-public sealed abstract class BinaryOperationNode extends Node permits AddNode, DivNode, ModNode, MulNode, SubNode {
+public sealed abstract class BinaryOperationNode extends Node permits AddNode, AndNode, AndBWNode, 
+    DivNode, EqualsNode, EqualsNotNode, GreaterNode, GreaterEqualNode, ModNode, MulNode, OrNode, 
+    OrBWNode, ShiftLeftNode, ShiftRightNode, SmallerNode, SmallerEqualNode, SubNode, XorNode {
+        
     public static final int LEFT = 0;
     public static final int RIGHT = 1;
 

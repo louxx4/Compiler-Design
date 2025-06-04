@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import edu.kit.kastel.vads.compiler.backend.regalloc.UselessRegister;
 import edu.kit.kastel.vads.compiler.ir.IrGraph;
 import edu.kit.kastel.vads.compiler.ir.node.AddNode;
 import edu.kit.kastel.vads.compiler.ir.node.BinaryOperationNode;
@@ -20,7 +21,6 @@ import edu.kit.kastel.vads.compiler.ir.node.ReturnNode;
 import edu.kit.kastel.vads.compiler.ir.node.StartNode;
 import edu.kit.kastel.vads.compiler.ir.node.SubNode;
 import static edu.kit.kastel.vads.compiler.ir.util.NodeSupport.predecessorSkipProj;
-import edu.kit.kastel.vads.compiler.backend.regalloc.UselessRegister;
 
 public class CodeGenerator {
 
@@ -65,6 +65,10 @@ public class CodeGenerator {
             case Phi _ -> throw new UnsupportedOperationException("phi");
             case Block _, ProjNode _, StartNode _ -> {
                 // do nothing, skip line break
+                return;
+            }
+            default -> {
+                // do nothing, skip new instructions (> Lab 1)
                 return;
             }
         }
