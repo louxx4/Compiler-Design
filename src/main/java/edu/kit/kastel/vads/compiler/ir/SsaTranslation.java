@@ -1,14 +1,9 @@
 package edu.kit.kastel.vads.compiler.ir;
 
-import java.util.ArrayDeque;
-import java.util.Deque;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.BinaryOperator;
 
-import edu.kit.kastel.vads.compiler.ir.node.Block;
-import edu.kit.kastel.vads.compiler.ir.node.DivNode;
-import edu.kit.kastel.vads.compiler.ir.node.ModNode;
-import edu.kit.kastel.vads.compiler.ir.node.Node;
+import edu.kit.kastel.vads.compiler.ir.node.*;
 import edu.kit.kastel.vads.compiler.ir.optimize.Optimizer;
 import edu.kit.kastel.vads.compiler.ir.util.DebugInfo;
 import edu.kit.kastel.vads.compiler.ir.util.DebugInfoHelper;
@@ -98,6 +93,9 @@ public class SsaTranslation {
                 case ASSIGN_MUL -> data.constructor::newMul;
                 case ASSIGN_DIV -> (lhs, rhs) -> projResultDivMod(data, data.constructor.newDiv(lhs, rhs));
                 case ASSIGN_MOD -> (lhs, rhs) -> projResultDivMod(data, data.constructor.newMod(lhs, rhs));
+                //logical operations:
+                case ASSIGN_AND -> data.constructor::newAnd;
+                case ASSIGN_OR -> data.constructor::newOr;
                 case ASSIGN -> null;
                 default ->
                     throw new IllegalArgumentException("not an assignment operator " + assignmentTree.operator());
@@ -237,47 +235,116 @@ public class SsaTranslation {
 
         @Override
         public Optional<Node> visit(IfStatementTree ifStatementTree, SsaTranslation data) {
-            throw new UnsupportedOperationException("Not supported yet."); //TODO
-        }
-
-        @Override
-        public Optional<Node> visit(WhileLoopTree whileLoopTree, SsaTranslation data) {
-            throw new UnsupportedOperationException("Not supported yet."); //TODO
-        }
-
-        @Override
-        public Optional<Node> visit(ForLoopTree forLoopTree, SsaTranslation data) {
-            throw new UnsupportedOperationException("Not supported yet."); //TODO
-        }
-
-        @Override
-        public Optional<Node> visit(BooleanTree booleanTree, SsaTranslation data) {
-            throw new UnsupportedOperationException("Not supported yet."); //TODO
-        }
-
-        @Override
-        public Optional<Node> visit(NegateBWTree negateBWTree, SsaTranslation data) {
-            throw new UnsupportedOperationException("Not supported yet."); //TODO
+            pushSpan(ifStatementTree);
+            Node condition = ifStatementTree.expression().accept(this, data).orElseThrow();
+            Node ifBody = ifStatementTree.if_body().accept(this, data).orElseThrow();
+            Node elseBody = null;
+            if (ifStatementTree.else_body() != null) {
+                elseBody = ifStatementTree.else_body().accept(this, data).orElseThrow();
+                Node node = data.constructor.newIfElse(condition, ifBody, elseBody);
+                popSpan();
+                return Optional.of(node);
+            }
+            Node node = data.constructor.newIf(condition, ifBody);
+            popSpan();
+            return Optional.of(node);
         }
 
         @Override
         public Optional<Node> visit(ConditionalTree conditionalTree, SsaTranslation data) {
-            throw new UnsupportedOperationException("Not supported yet."); //TODO
+            pushSpan(conditionalTree);
+            Node condition = conditionalTree.lhs().accept(this, data).orElseThrow();
+            Node ifExpression = conditionalTree.if_expression().accept(this, data).orElseThrow();
+            Node elseExpression = conditionalTree.else_expression().accept(this, data).orElseThrow();
+            Node node = data.constructor.newIfElse(condition, ifExpression, elseExpression);
+            popSpan();
+            return Optional.of(node);
+        }
+
+        @Override
+        public Optional<Node> visit(WhileLoopTree whileLoopTree, SsaTranslation data) {
+            pushSpan(whileLoopTree);
+            Node condition = whileLoopTree.expression().accept(this, data).orElseThrow();
+            Node body = whileLoopTree.statement().accept(this, data).orElseThrow();
+            Node node = data.constructor.newWhileLoop(condition, body);
+            popSpan();
+            return Optional.of(node);
+        }
+
+        @Override
+        public Optional<Node> visit(ForLoopTree forLoopTree, SsaTranslation data) {
+            pushSpan(forLoopTree);
+            Node condition = forLoopTree.condition().accept(this, data).orElseThrow();
+            Node initialization = null;
+            if (forLoopTree.initialization() != null) {
+                initialization = forLoopTree.initialization().accept(this, data).orElseThrow();
+            }
+            Node advancement = null;
+            if (forLoopTree.advancement() != null) {
+                advancement = forLoopTree.advancement().accept(this, data).orElseThrow();
+            }
+            Node body = forLoopTree.body().accept(this, data).orElseThrow();
+            Node node = data.constructor.newForLoop(condition, initialization, advancement, body);
+            popSpan();
+            return Optional.of(node);
+        }
+
+        @Override
+        public Optional<Node> visit(BooleanTree booleanTree, SsaTranslation data) {
+            pushSpan(booleanTree);
+            Node node = data.constructor.newConstBool(booleanTree.value());
+            popSpan();
+            return Optional.of(node);
+        }
+
+        @Override
+        public Optional<Node> visit(NegateBWTree negateBWTree, SsaTranslation data) {
+            pushSpan(negateBWTree);
+            Node rightNode = negateBWTree.expression().accept(this, data).orElseThrow();
+            Node node = data.constructor.newNegateBW(rightNode);
+            popSpan();
+            return Optional.of(node);
         }
 
         @Override
         public Optional<Node> visit(JumpTree jumpTree, SsaTranslation data) {
-            throw new UnsupportedOperationException("Not supported yet."); //TODO
+            pushSpan(jumpTree);
+            Node res = switch (jumpTree.type()) {
+                case CONTINUE -> data.constructor.newContinue();
+                case BREAK -> data.constructor.newBreak();
+            };
+            popSpan();
+            return Optional.of(res);
         }
 
         @Override
         public Optional<Node> visit(NotTree notTree, SsaTranslation data) {
-            throw new UnsupportedOperationException("Not supported yet."); //TODO
+            pushSpan(notTree);
+            Node rightNode = notTree.expression().accept(this, data).orElseThrow();
+            Node node = data.constructor.newNot(rightNode);
+            popSpan();
+            return Optional.of(node);
         }
 
         @Override
         public Optional<Node> visit(LogicalOperationTree logicalOperationTree, SsaTranslation data) {
-            throw new UnsupportedOperationException("Not supported yet."); //TODO
+            pushSpan(logicalOperationTree);
+            Node lhs = logicalOperationTree.lhs().accept(this, data).orElseThrow();
+            Node rhs = logicalOperationTree.rhs().accept(this, data).orElseThrow();
+            Node res = switch (logicalOperationTree.operatorType()) {
+                case LESS -> data.constructor.newLess(lhs, rhs);
+                case LEQ -> data.constructor.newLeq(lhs, rhs);
+                case GREATER -> data.constructor.newGreater(lhs, rhs);
+                case GEQ -> data.constructor.newGeq(lhs, rhs);
+                case EQ -> data.constructor.newEq(lhs, rhs);
+                case NEQ -> data.constructor.newNeq(lhs, rhs);
+                case AND -> data.constructor.newAnd(lhs, rhs);
+                case OR -> data.constructor.newOr(lhs, rhs);
+                default ->
+                        throw new IllegalArgumentException("not a logical expression operator " + logicalOperationTree.operatorType());
+            };
+            popSpan();
+            return Optional.of(res);
         }
     }
 

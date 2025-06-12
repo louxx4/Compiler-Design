@@ -38,6 +38,14 @@ public class IrGraph {
         return Set.copyOf(successors);
     }
 
+    public void replaceAllBy (Node toReplace, Node replacement) {
+        for (Node node : successors.keySet()) {
+            if (node == toReplace) {
+                node = replacement;
+            }
+        }
+    }
+
     public Block startBlock() {
         return this.startBlock;
     }

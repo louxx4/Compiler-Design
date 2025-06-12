@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import edu.kit.kastel.vads.compiler.ir.node.*;
 import edu.kit.kastel.vads.compiler.ir.node.AddNode;
 import edu.kit.kastel.vads.compiler.ir.node.Block;
 import edu.kit.kastel.vads.compiler.ir.node.ConstIntNode;
@@ -19,6 +20,7 @@ import edu.kit.kastel.vads.compiler.ir.node.StartNode;
 import edu.kit.kastel.vads.compiler.ir.node.SubNode;
 import edu.kit.kastel.vads.compiler.ir.optimize.Optimizer;
 import edu.kit.kastel.vads.compiler.parser.symbol.Name;
+import edu.kit.kastel.vads.compiler.parser.type.JumpType;
 
 class GraphConstructor {
 
@@ -71,6 +73,129 @@ class GraphConstructor {
         // always move const into start block, this allows better deduplication
         // and resultingly in better value numbering
         return this.optimizer.transform(new ConstIntNode(this.graph.startBlock(), value));
+    }
+
+    public Node newConstBool(boolean value) {
+        return this.optimizer.transform(new ConstBoolNode(this.graph.startBlock(), value));
+    }
+
+    public Node newNot(Node right) {
+        return this.optimizer.transform(new NotNode(currentBlock(), right));
+    }
+
+    public Node newAnd(Node left, Node right) {
+        return this.optimizer.transform(new AndNode(currentBlock(), left, right));
+    }
+
+    public Node newOr(Node left, Node right) {
+        return this.optimizer.transform(new OrNode(currentBlock(), left, right));
+    }
+
+    public Node newEq(Node left, Node right) {
+        return this.optimizer.transform(new EqualsNode(currentBlock(), left, right));
+    }
+
+    public Node newNeq(Node left, Node right) {
+        return this.optimizer.transform(new EqualsNotNode(currentBlock(), left, right));
+    }
+
+    public Node newGeq(Node left, Node right) {
+        return this.optimizer.transform(new GreaterEqualNode(currentBlock(), left, right));
+    }
+
+    public Node newGreater(Node left, Node right) {
+        return this.optimizer.transform(new GreaterNode(currentBlock(), left, right));
+    }
+
+    public Node newLeq(Node left, Node right) {
+        return this.optimizer.transform(new SmallerEqualNode(currentBlock(), left, right));
+    }
+
+    public Node newLess(Node left, Node right) {
+        return this.optimizer.transform(new SmallerNode(currentBlock(), left, right));
+    }
+
+    public Node newNegateBW(Node right) {
+        return this.optimizer.transform(new NotBWNode(currentBlock(), right));
+    }
+
+    public Node newIf(Node condition, Node ifTrue) {
+        Node ifNode = this.optimizer.transform(new IfNode(currentBlock(), condition));
+        Node projTrue = this.optimizer.transform(new ProjNode(currentBlock, ifNode, ProjNode.BooleanProjectionInfo.TRUE));
+        Node projFalse = this.optimizer.transform(new ProjNode(currentBlock, ifNode, ProjNode.BooleanProjectionInfo.FALSE));
+
+        Node jumpTrueNode = this.optimizer.transform(new JumpNode(currentBlock(), projTrue));
+        ifTrue.addPredecessor(jumpTrueNode);
+
+        Node jumpFalseNode = this.optimizer.transform(new JumpNode(currentBlock(), projFalse));
+        Node ifEndNode = this.optimizer.transform(new IfEndNode(currentBlock(), ifTrue, jumpFalseNode));
+        return ifNode;
+    }
+
+    public Node newIfElse(Node condition, Node ifTrue, Node ifFalse) {
+        Node ifNode = this.optimizer.transform(new IfNode(currentBlock(), condition));
+        Node projTrue = this.optimizer.transform(new ProjNode(currentBlock, ifNode, ProjNode.BooleanProjectionInfo.TRUE));
+        Node projFalse = this.optimizer.transform(new ProjNode(currentBlock, ifNode, ProjNode.BooleanProjectionInfo.FALSE));
+
+        Node jumpTrueNode = this.optimizer.transform(new JumpNode(currentBlock(), projTrue));
+        ifTrue.addPredecessor(jumpTrueNode);
+
+        Node jumpFalseNode = this.optimizer.transform(new JumpNode(currentBlock(), projFalse));
+        ifFalse.addPredecessor(jumpFalseNode);
+        Node ifEndNode = this.optimizer.transform(new IfEndNode(currentBlock(), ifTrue, ifFalse));
+        return ifNode;
+    }
+
+    public Node newWhileLoop(Node condition, Node body) {
+        Node ifNode = this.optimizer.transform(new IfNode(currentBlock(), condition));
+        Node projTrue = this.optimizer.transform(new ProjNode(currentBlock, ifNode, ProjNode.BooleanProjectionInfo.TRUE));
+        Node projFalse = this.optimizer.transform(new ProjNode(currentBlock, ifNode, ProjNode.BooleanProjectionInfo.FALSE));
+
+        Node jumpTrueNode = this.optimizer.transform(new JumpNode(currentBlock(), projTrue));
+        body.addPredecessor(jumpTrueNode);
+
+        Node jumpFalseNode = this.optimizer.transform(new JumpNode(currentBlock(), projFalse));
+        Node ifEndNode = this.optimizer.transform(new IfEndNode(currentBlock(), body, jumpFalseNode));
+
+        Node jumpNode = this.optimizer.transform(new JumpNode(currentBlock(), body));
+        ifNode.addPredecessor(jumpNode);
+
+        return ifNode;
+    }
+
+    public Node newForLoop(Node initialization, Node condition, Node advancement, Node body) {
+        if (initialization != null) {
+            condition.addPredecessor(initialization);
+
+        }
+        Node ifNode = this.optimizer.transform(new IfNode(currentBlock(), condition));
+        Node projTrue = this.optimizer.transform(new ProjNode(currentBlock, ifNode, ProjNode.BooleanProjectionInfo.TRUE));
+        Node projFalse = this.optimizer.transform(new ProjNode(currentBlock, ifNode, ProjNode.BooleanProjectionInfo.FALSE));
+
+        Node jumpTrueNode = this.optimizer.transform(new JumpNode(currentBlock(), projTrue));
+        body.addPredecessor(jumpTrueNode);
+
+        Node jumpFalseNode = this.optimizer.transform(new JumpNode(currentBlock(), projFalse));
+        Node ifEndNode = this.optimizer.transform(new IfEndNode(currentBlock(), body, jumpFalseNode));
+
+        Node jumpNode;
+        if (advancement != null) {
+            advancement.addPredecessor(body);
+            jumpNode = this.optimizer.transform(new JumpNode(currentBlock(), advancement));
+        } else {
+            jumpNode = this.optimizer.transform(new JumpNode(currentBlock(), body));
+        }
+        ifNode.addPredecessor(jumpNode);
+
+        return ifNode;
+    }
+
+    public Node newContinue() {
+        return this.optimizer.transform(new LoopJumpNode(JumpType.CONTINUE, currentBlock()));
+    }
+
+    public Node newBreak() {
+        return this.optimizer.transform(new LoopJumpNode(JumpType.BREAK, currentBlock()));
     }
 
     public Node newSideEffectProj(Node node) {
@@ -131,11 +256,28 @@ class GraphConstructor {
     }
 
     Node tryRemoveTrivialPhi(Phi phi) {
-        // TODO: the paper shows how to remove trivial phis.
-        // as this is not a problem in Lab 1 and it is just
-        // a simplification, we recommend to implement this
-        // part yourself.
-        return phi;
+        Node same = null;
+        for (Node op : phi.block().predecessors()) {
+            if (op == same || op == phi) {
+                continue;
+            }
+            if (same != null) {
+                return phi;
+            }
+            same = op;
+        }
+        if (same == null) {
+            throw new RuntimeException("Phi unreachable or in start block");
+        }
+        Set<Node> users = new HashSet<Node>(phi.graph().successors(phi));
+        users.remove(phi);
+        graph.replaceAllBy(phi, same);
+        for (Node use : users) {
+            if (use instanceof Phi) {
+                tryRemoveTrivialPhi((Phi) use);
+            }
+        }
+        return same;
     }
 
     void sealBlock(Block block) {
