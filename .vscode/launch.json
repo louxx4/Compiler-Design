@@ -9,7 +9,8 @@
             "request": "launch",
             "name": "Launch Java App",
             "mainClass": "${workspaceFolder}/src/main/java/edu/kit/kastel/vads/compiler/Main.java",
-            "args": ["foo.c", "asmexe"]
+            "args": ["foo.c", "asmexe"],
+            "vmArgs": "-DdumpGraphs=vcg"
         }
     ]
 }

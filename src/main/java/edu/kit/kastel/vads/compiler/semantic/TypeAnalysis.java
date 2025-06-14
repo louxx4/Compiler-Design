@@ -157,8 +157,10 @@ class TypeAnalysis implements NoOpVisitor<TypeContext> {
         if(t_expr != TypeStatus.BOOL) signalInvalidOperand(ifStatementTree, t_expr, TypeStatus.BOOL);
         TypeStatus t1 = context.get(ifStatementTree.if_body());
         if(t1 != TypeStatus.VALID) signalInvalidExpression(ifStatementTree, t1, TypeStatus.VALID);
-        TypeStatus t2 = context.get(ifStatementTree.else_body());
-        if(t2 != TypeStatus.VALID) signalInvalidExpression(ifStatementTree, t2, TypeStatus.VALID);
+        if(ifStatementTree.else_body() != null) {
+            TypeStatus t2 = context.get(ifStatementTree.else_body());
+            if(t2 != TypeStatus.VALID) signalInvalidExpression(ifStatementTree, t2, TypeStatus.VALID);
+        }
         context.put(ifStatementTree, TypeStatus.VALID);
         return NoOpVisitor.super.visit(ifStatementTree, context);
     }

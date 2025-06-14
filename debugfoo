@@ -1,6 +1,4 @@
-1: mov $7, %t1                {live: }
-2: mov $0, %t0                {live: %t1}
-3: sub %t1, %t0               {live: %t1,%t0}
-4: mov %t0, %eax              {live: %t0}
-5: cltq                       {live: }
-6: ret                        {live: }
+1: mov $1, %t0                {live: }
+2: mov %t0, %eax              {live: %t0}
+3: cltq                       {live: }
+4: ret                        {live: }

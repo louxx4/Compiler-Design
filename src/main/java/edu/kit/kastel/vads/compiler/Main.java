@@ -29,6 +29,7 @@ import edu.kit.kastel.vads.compiler.semantic.SemanticException;
 //Run with:                     sh run.sh foo.c foo
 //Generate executable with:     gcc asmfoo.s -o asmexe
 //Execute with:                 ./asmexe
+//Open graph in editor:         yComp-1.3.19/ycomp /home/lule/compiler-design/Compiler-Design/graphs/main-before-codegen.vcg
 public class Main {
     @SuppressWarnings("CallToPrintStackTrace")
     public static void main(String[] args) throws IOException {
@@ -61,7 +62,7 @@ public class Main {
 
         if ("vcg".equals(System.getenv("DUMP_GRAPHS")) || "vcg".equals(System.getProperty("dumpGraphs"))) {
             Path tmp = output.toAbsolutePath().resolveSibling("graphs");
-            Files.createDirectory(tmp);
+            //Files.createDirectory(tmp);
             for (IrGraph graph : graphs) {
                 dumpGraph(graph, tmp, "before-codegen");
             }

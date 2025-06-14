@@ -1,5 +1,6 @@
 package edu.kit.kastel.vads.compiler.semantic;
 
+import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
 
@@ -90,7 +91,8 @@ class VariableStatusAnalysis implements NoOpVisitor<Namespace<VariableStatusAnal
             Namespace<VariableStatus> namespaceIf = data[ifStatementTree.block_if()];
             Namespace<VariableStatus> namespaceElse = data[ifStatementTree.block_else()];
             Namespace<VariableStatus> namespaceParent = namespaceIf.getEnclosing();
-            Set<Name> varsDefinedInBothBlocks = Set.copyOf(namespaceIf.getKeys());
+            Set<Name> varsDefinedInBothBlocks = new HashSet<>();
+            varsDefinedInBothBlocks.addAll(namespaceIf.getKeys());
             varsDefinedInBothBlocks.retainAll(namespaceElse.getKeys());
             for(Name name : varsDefinedInBothBlocks) {
                 if(namespaceIf.get(name)   == VariableStatus.INITIALIZED && 

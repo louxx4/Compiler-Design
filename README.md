@@ -80,7 +80,7 @@ You can get rid of all that, but it can be helpful to track down where something
 ### yComp
 
 To use yComp, you need to patch the provided start script to make it work with modern Java versions.
-You can copy-paste the following script:
+You can copy-paste the following secript:
 ```sh
 #!/bin/sh
 set -e

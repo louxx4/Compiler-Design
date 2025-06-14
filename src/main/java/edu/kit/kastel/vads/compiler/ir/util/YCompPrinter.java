@@ -18,6 +18,10 @@ import edu.kit.kastel.vads.compiler.ir.node.BinaryOperationNode;
 import edu.kit.kastel.vads.compiler.ir.node.Block;
 import edu.kit.kastel.vads.compiler.ir.node.ConstBoolNode;
 import edu.kit.kastel.vads.compiler.ir.node.ConstIntNode;
+import edu.kit.kastel.vads.compiler.ir.node.IfEndNode;
+import edu.kit.kastel.vads.compiler.ir.node.IfNode;
+import edu.kit.kastel.vads.compiler.ir.node.JumpNode;
+import edu.kit.kastel.vads.compiler.ir.node.LoopJumpNode;
 import edu.kit.kastel.vads.compiler.ir.node.Node;
 import edu.kit.kastel.vads.compiler.ir.node.Phi;
 import edu.kit.kastel.vads.compiler.ir.node.ProjNode;
@@ -49,6 +53,7 @@ public class YCompPrinter {
                     _ -> Collections.newSetFromMap(new IdentityHashMap<>())
                 )
                 .add(node);
+            prepare(node.block(), seen);
         }
         for (Node predecessor : node.predecessors()) {
             prepare(predecessor, seen);
@@ -168,12 +173,7 @@ public class YCompPrinter {
         StringJoiner result = new StringJoiner("\n");
         List<? extends Node> parents = block.predecessors();
         for (Node parent : parents) {
-            if (parent instanceof ReturnNode) {
-                // Return needs no label
-                result.add(formatControlflowEdge(parent, block, ""));
-            } else {
-                throw new RuntimeException("Unknown paren type: " + parent);
-            }
+            result.add(formatControlflowEdge(parent, block, ""));
         }
 
         return result.toString();
@@ -232,6 +232,10 @@ public class YCompPrinter {
             }
             case ReturnNode _ -> VcgColor.CONTROL_FLOW;
             case StartNode _ -> VcgColor.CONTROL_FLOW;
+            case IfNode _ -> VcgColor.CONTROL_FLOW;
+            case IfEndNode _ -> VcgColor.CONTROL_FLOW;
+            case LoopJumpNode _ -> VcgColor.CONTROL_FLOW;
+            case JumpNode _ -> VcgColor.CONTROL_FLOW;
         };
     }
 
@@ -252,6 +256,10 @@ public class YCompPrinter {
             return "start-block";
         } else if (node == this.graph.endBlock()) {
             return "end-block";
+        } else if(node instanceof Block) {
+            Block bnode = (Block) node;
+            if(bnode.type == Block.BlockType.IF_BODY) return "if-body";
+            else if(bnode.type == Block.BlockType.ELSE_BODY) return "else-body";
         }
         return node.toString();
     }

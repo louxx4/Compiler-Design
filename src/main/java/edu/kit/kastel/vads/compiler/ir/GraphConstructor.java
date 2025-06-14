@@ -31,7 +31,7 @@ class GraphConstructor {
     private final Map<Block, Node> currentSideEffect = new HashMap<>();
     private final Map<Block, Phi> incompleteSideEffectPhis = new HashMap<>();
     private final Set<Block> sealedBlocks = new HashSet<>();
-    private final Block currentBlock;
+    private Block currentBlock;
 
     public GraphConstructor(Optimizer optimizer, String name) {
         this.optimizer = optimizer;
@@ -84,11 +84,23 @@ class GraphConstructor {
     }
 
     public Node newAnd(Node left, Node right) {
-        return this.optimizer.transform(new AndNode(currentBlock(), left, right));
+        return this.optimizer.transform(new AndBWNode(currentBlock(), left, right));
     }
 
     public Node newOr(Node left, Node right) {
-        return this.optimizer.transform(new OrNode(currentBlock(), left, right));
+        return this.optimizer.transform(new OrBWNode(currentBlock(), left, right));
+    }
+
+    public Node newXor(Node left, Node right) {
+        return this.optimizer.transform(new XorNode(currentBlock(), left, right));
+    }
+
+    public Node newShl(Node left, Node right) {
+        return this.optimizer.transform(new ShiftLeftNode(currentBlock(), left, right));
+    }
+
+    public Node newShr(Node left, Node right) {
+        return this.optimizer.transform(new ShiftRightNode(currentBlock(), left, right));
     }
 
     public Node newEq(Node left, Node right) {
@@ -119,31 +131,42 @@ class GraphConstructor {
         return this.optimizer.transform(new NotBWNode(currentBlock(), right));
     }
 
-    public Node newIf(Node condition, Node ifTrue) {
-        Node ifNode = this.optimizer.transform(new IfNode(currentBlock(), condition));
-        Node projTrue = this.optimizer.transform(new ProjNode(currentBlock, ifNode, ProjNode.BooleanProjectionInfo.TRUE));
-        Node projFalse = this.optimizer.transform(new ProjNode(currentBlock, ifNode, ProjNode.BooleanProjectionInfo.FALSE));
-
-        Node jumpTrueNode = this.optimizer.transform(new JumpNode(currentBlock(), projTrue));
-        ifTrue.addPredecessor(jumpTrueNode);
-
-        Node jumpFalseNode = this.optimizer.transform(new JumpNode(currentBlock(), projFalse));
-        Node ifEndNode = this.optimizer.transform(new IfEndNode(currentBlock(), ifTrue, jumpFalseNode));
-        return ifNode;
+    public Block newBlock(Block.BlockType type, Node... predecessors) {
+        Block block = newBlock(type);
+        for(Node p : predecessors) {
+            block.addPredecessor(p);
+        }
+        return block;
     }
 
-    public Node newIfElse(Node condition, Node ifTrue, Node ifFalse) {
-        Node ifNode = this.optimizer.transform(new IfNode(currentBlock(), condition));
-        Node projTrue = this.optimizer.transform(new ProjNode(currentBlock, ifNode, ProjNode.BooleanProjectionInfo.TRUE));
-        Node projFalse = this.optimizer.transform(new ProjNode(currentBlock, ifNode, ProjNode.BooleanProjectionInfo.FALSE));
+    public Block newBlock(Block.BlockType type) {
+        Block block = new Block(this.graph, type);
+        this.currentBlock = block;
+        return block;
+    }
 
-        Node jumpTrueNode = this.optimizer.transform(new JumpNode(currentBlock(), projTrue));
-        ifTrue.addPredecessor(jumpTrueNode);
+    public Block newBlock() {
+        return newBlock(Block.BlockType.BASIC);
+    }
 
-        Node jumpFalseNode = this.optimizer.transform(new JumpNode(currentBlock(), projFalse));
-        ifFalse.addPredecessor(jumpFalseNode);
-        Node ifEndNode = this.optimizer.transform(new IfEndNode(currentBlock(), ifTrue, ifFalse));
-        return ifNode;
+    public Block newBlock(Node... predecessors) {
+        return newBlock(Block.BlockType.BASIC, predecessors);
+    }
+
+    public Node newJump() {
+        return this.optimizer.transform(new JumpNode(currentBlock()));
+    }
+
+    public Node newProj(Node in, ProjNode.ProjectionInfo info) {
+        return this.optimizer.transform(new ProjNode(currentBlock(), in, info));
+    }
+
+    public Node newIfNode(Node condition) {
+        return this.optimizer.transform(new IfNode(currentBlock(), condition));
+    }
+
+    public Node newIfEndNode(Node... predecessors) {
+        return this.optimizer.transform(new IfEndNode(currentBlock(), predecessors));
     }
 
     public Node newWhileLoop(Node condition, Node body) {

@@ -117,7 +117,9 @@ public class RecursivePostorderVisitor<T, R> implements Visitor<T, R> {
     public R visit(IfStatementTree ifStatementTree, T data) {
         R r = ifStatementTree.expression().accept(this, data);
         r = ifStatementTree.if_body().accept(this, accumulate(data, r));
-        r = ifStatementTree.else_body().accept(this, accumulate(data, r));
+        if(ifStatementTree.else_body() != null) {
+            r = ifStatementTree.else_body().accept(this, accumulate(data, r));
+        }
         r = this.visitor.visit(ifStatementTree, accumulate(data, r));
         return r;
     }

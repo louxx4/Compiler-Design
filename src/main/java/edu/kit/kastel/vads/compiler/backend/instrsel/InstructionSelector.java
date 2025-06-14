@@ -13,12 +13,17 @@ import edu.kit.kastel.vads.compiler.ir.node.EqualsNode;
 import edu.kit.kastel.vads.compiler.ir.node.EqualsNotNode;
 import edu.kit.kastel.vads.compiler.ir.node.GreaterEqualNode;
 import edu.kit.kastel.vads.compiler.ir.node.GreaterNode;
+import edu.kit.kastel.vads.compiler.ir.node.IfEndNode;
+import edu.kit.kastel.vads.compiler.ir.node.IfNode;
+import edu.kit.kastel.vads.compiler.ir.node.JumpNode;
+import edu.kit.kastel.vads.compiler.ir.node.LoopJumpNode;
 import edu.kit.kastel.vads.compiler.ir.node.ModNode;
 import edu.kit.kastel.vads.compiler.ir.node.MulNode;
 import edu.kit.kastel.vads.compiler.ir.node.Node;
 import edu.kit.kastel.vads.compiler.ir.node.NotBWNode;
 import edu.kit.kastel.vads.compiler.ir.node.NotNode;
 import edu.kit.kastel.vads.compiler.ir.node.OrBWNode;
+import edu.kit.kastel.vads.compiler.ir.node.Phi;
 import edu.kit.kastel.vads.compiler.ir.node.ProjNode;
 import edu.kit.kastel.vads.compiler.ir.node.ReturnNode;
 import edu.kit.kastel.vads.compiler.ir.node.ShiftLeftNode;
@@ -31,6 +36,22 @@ import edu.kit.kastel.vads.compiler.ir.node.XorNode;
 import edu.kit.kastel.vads.compiler.ir.util.NodeSupport;
 
 public class InstructionSelector {
+
+    private class PhiInfo {
+        public final boolean defined;
+        public TempReg target;
+        public Node source;
+
+        public PhiInfo(TempReg target, Node source) {
+            this.target = target;
+            this.source = source;
+            this.defined = true;
+        }
+
+        public PhiInfo() {
+            this.defined = false;
+        }
+    }
 
     private Integer REG_COUNTER = 0;
     private Integer INSTR_COUNTER = 1;
@@ -51,9 +72,13 @@ public class InstructionSelector {
         return builder;
     }
 
+    public TempReg maximalMunch(Node node, List<Instruction> builder) {
+        return maximalMunch(node, builder, new PhiInfo());
+    }
+
     // Performs recursive maximal munch on a function graph, storing the resulting 
     // instruction sequence within a sorted list.
-    public TempReg maximalMunch(Node node, List<Instruction> builder) {
+    public TempReg maximalMunch(Node node, List<Instruction> builder, PhiInfo phiInfo) {
         TempReg res;
 
         if(node.instructionInfo.wasVisited()) {
@@ -80,6 +105,11 @@ public class InstructionSelector {
                 case GreaterEqualNode greaterEq -> res = handleGreaterEqualNode(greaterEq, builder);
                 case SmallerNode smaller        -> res = handleSmallerNode(smaller, builder);
                 case SmallerEqualNode smallerEq -> res = handleSmallerEqualNode(smallerEq, builder);
+                case IfNode ifNode              -> res = null;
+                case IfEndNode ifEndNode        -> res = null;
+                case JumpNode jumpNode          -> res = null;
+                case LoopJumpNode loopNode      -> res = null;
+                case Phi phi                    -> res = handlePhiNode(phi, builder);
                 default -> {
                     System.out.println("Instruction selection failed: Node was of type " + 
                         node.toString());
@@ -138,6 +168,20 @@ public class InstructionSelector {
         TempReg t = new TempReg(REG_COUNTER++, size);
         ALL_TREGS.add(t);
         return t;
+    }
+
+    private TempReg handleJumpNode(JumpNode jumpNode, List<Instruction> builder) {
+        return null; //TODO
+    }
+
+    private TempReg handlePhiNode(Phi phi, List<Instruction> builder) {
+        TempReg res = newTempReg();
+        for(int i = 0; i < phi.predecessors().size(); i++) {
+            Node input_i = phi.predecessor(i);
+            Node block_i = phi.block().predecessor(i);
+            maximalMunch(block_i, builder, new PhiInfo(res, input_i));
+        }
+        return res;
     }
 
     private TempReg handleGreaterNode(GreaterNode greater, List<Instruction> builder) {
@@ -905,7 +949,7 @@ public class InstructionSelector {
         TempReg res;
         Instruction ins;
         
-        if(!(sideEffect.equals(resNode) || sideEffect instanceof StartNode)) {
+        if(!(sideEffect.equals(resNode) || sideEffect instanceof StartNode || sideEffect instanceof Phi)) {
             maximalMunch(sideEffect, builder); //ignore result (only trigger side effect)
         }
 

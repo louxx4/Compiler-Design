@@ -12,22 +12,25 @@ digraph "main" {
 
     subgraph cluster_1 {
         c_1 [width=0, height=0, fixedsize=true, style=invis];
-        2 [label="Add", tooltip="source span: [1:10|1:15]"];
-        3 [label="ConstInt [4]", tooltip="source span: [1:14|1:15]"];
-        4 [label="Return", tooltip="source span: [2:2|2:11]"];
-        5 [label="ConstInt [0]", tooltip="source span: [2:9|2:11]"];
-        6 [label="ConstInt [3]", tooltip="source span: [1:10|1:11]"];
-        7 [label="Proj SIDE_EFFECT", tooltip="source span: [0:0|3:1]"];
-        8 [label="Start", tooltip="source span: [0:0|3:1]"];
-        9 [label="Sub", tooltip="source span: [2:9|2:11]"];
+        2 [label="Phi", tooltip="source span: [5:2|5:10]"];
+        3 [label="Return", tooltip="source span: [5:2|5:10]"];
+        4 [label="Phi", tooltip="source span: [5:9|5:10]"];
     }
 
-    4 -> c_0 [label=0, lhead=cluster_0];
-    7 -> 4 [label=0];
-    8 -> 7 [label=0];
-    9 -> 4 [label=1];
-    5 -> 9 [label=0];
-    2 -> 9 [label=1];
+    subgraph cluster_5 {
+        c_5 [width=0, height=0, fixedsize=true, style=invis];
+        6 [label="Proj SIDE_EFFECT", tooltip="source span: [0:0|6:1]"];
+        7 [label="Start", tooltip="source span: [0:0|6:1]"];
+        8 [label="ConstInt [1]", tooltip="source span: [3:8|3:9]"];
+        9 [label="ConstInt [5]", tooltip="source span: [1:10|1:11]"];
+    }
+
+    3 -> c_0 [label=0, lhead=cluster_0];
+    2 -> 3 [label=0];
     6 -> 2 [label=0];
-    3 -> 2 [label=1];
+    7 -> 6 [label=0];
+    6 -> 2 [label=1];
+    4 -> 3 [label=1];
+    8 -> 4 [label=0];
+    9 -> 4 [label=1];
 }

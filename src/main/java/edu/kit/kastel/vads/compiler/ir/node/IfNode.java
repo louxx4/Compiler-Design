@@ -3,6 +3,9 @@ package edu.kit.kastel.vads.compiler.ir.node;
 import edu.kit.kastel.vads.compiler.ir.IrGraph;
 
 public final class IfNode extends Node {
+    public static final int BTRUE = 0;
+    public static final int BFALSE = 1;
+
     public IfNode(IrGraph graph) {
         super(graph);
     }

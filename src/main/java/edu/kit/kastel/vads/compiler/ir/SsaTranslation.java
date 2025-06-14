@@ -1,9 +1,15 @@
 package edu.kit.kastel.vads.compiler.ir;
 
-import java.util.*;
+import java.util.ArrayDeque;
+import java.util.Deque;
+import java.util.Optional;
 import java.util.function.BinaryOperator;
 
-import edu.kit.kastel.vads.compiler.ir.node.*;
+import edu.kit.kastel.vads.compiler.ir.node.Block;
+import edu.kit.kastel.vads.compiler.ir.node.DivNode;
+import edu.kit.kastel.vads.compiler.ir.node.ModNode;
+import edu.kit.kastel.vads.compiler.ir.node.Node;
+import edu.kit.kastel.vads.compiler.ir.node.ProjNode;
 import edu.kit.kastel.vads.compiler.ir.optimize.Optimizer;
 import edu.kit.kastel.vads.compiler.ir.util.DebugInfo;
 import edu.kit.kastel.vads.compiler.ir.util.DebugInfoHelper;
@@ -93,9 +99,11 @@ public class SsaTranslation {
                 case ASSIGN_MUL -> data.constructor::newMul;
                 case ASSIGN_DIV -> (lhs, rhs) -> projResultDivMod(data, data.constructor.newDiv(lhs, rhs));
                 case ASSIGN_MOD -> (lhs, rhs) -> projResultDivMod(data, data.constructor.newMod(lhs, rhs));
-                //logical operations:
                 case ASSIGN_AND -> data.constructor::newAnd;
                 case ASSIGN_OR -> data.constructor::newOr;
+                case ASSIGN_XOR -> data.constructor::newXor;
+                case ASSIGN_SHL -> data.constructor::newShl;
+                case ASSIGN_SHR -> data.constructor::newShr;
                 case ASSIGN -> null;
                 default ->
                     throw new IllegalArgumentException("not an assignment operator " + assignmentTree.operator());
@@ -237,28 +245,46 @@ public class SsaTranslation {
         public Optional<Node> visit(IfStatementTree ifStatementTree, SsaTranslation data) {
             pushSpan(ifStatementTree);
             Node condition = ifStatementTree.expression().accept(this, data).orElseThrow();
-            Node ifBody = ifStatementTree.if_body().accept(this, data).orElseThrow();
-            Node elseBody = null;
+            //create if projections
+            Node projTrue = data.constructor.newProj(condition, ProjNode.BooleanProjectionInfo.TRUE);
+            Node projFalse = data.constructor.newProj(condition, ProjNode.BooleanProjectionInfo.FALSE);
+            data.constructor.sealBlock(data.constructor.currentBlock());
+            //create if/else body blocks
+            Block ifBody = data.constructor.newBlock(Block.BlockType.IF_BODY, projTrue);
+            ifStatementTree.if_body().accept(this, data);
+            Node jumpIf = data.constructor.newJump();
+            data.constructor.sealBlock(ifBody);
+            Block elseBody = data.constructor.newBlock(Block.BlockType.ELSE_BODY, projFalse);
             if (ifStatementTree.else_body() != null) {
-                elseBody = ifStatementTree.else_body().accept(this, data).orElseThrow();
-                Node node = data.constructor.newIfElse(condition, ifBody, elseBody);
-                popSpan();
-                return Optional.of(node);
+                ifStatementTree.else_body().accept(this, data);
             }
-            Node node = data.constructor.newIf(condition, ifBody);
+            Node jumpElse = data.constructor.newJump();
+            data.constructor.sealBlock(elseBody);
+            data.constructor.newBlock(jumpIf, jumpElse); //following block
+            data.constructor.sealBlock(data.constructor.currentBlock());
             popSpan();
-            return Optional.of(node);
+            return NOT_AN_EXPRESSION;
         }
 
         @Override
         public Optional<Node> visit(ConditionalTree conditionalTree, SsaTranslation data) {
             pushSpan(conditionalTree);
             Node condition = conditionalTree.lhs().accept(this, data).orElseThrow();
+            //create if projections
+            Node ifNode = data.constructor.newIfNode(condition);
+            Node projTrue = data.constructor.newProj(ifNode, ProjNode.BooleanProjectionInfo.TRUE);
+            ifNode.addPredecessor(projTrue);
+            Node projFalse = data.constructor.newProj(ifNode, ProjNode.BooleanProjectionInfo.FALSE);
+            ifNode.addPredecessor(projFalse);
+            //create if/else body nodes
             Node ifExpression = conditionalTree.if_expression().accept(this, data).orElseThrow();
             Node elseExpression = conditionalTree.else_expression().accept(this, data).orElseThrow();
-            Node node = data.constructor.newIfElse(condition, ifExpression, elseExpression);
+            ifExpression.addPredecessor(projTrue);
+            elseExpression.addPredecessor(projFalse);
+            //create join node
+            Node ifEndNode = data.constructor.newIfEndNode(ifExpression, elseExpression);
             popSpan();
-            return Optional.of(node);
+            return Optional.of(ifEndNode);
         }
 
         @Override
