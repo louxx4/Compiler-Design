@@ -10,7 +10,7 @@ import edu.kit.kastel.vads.compiler.ir.util.DebugInfoHelper;
 
 /// The base class for all nodes.
 public sealed abstract class Node permits BinaryOperationNode, Block, ConstIntNode, ConstBoolNode, 
-    Phi, ProjNode, UnaryOperationNode, ReturnNode, StartNode {
+    Phi, ProjNode, UnaryOperationNode, ReturnNode, StartNode, JumpNode, IfNode, IfEndNode, LoopJumpNode {
         
     private final IrGraph graph;
     private final Block block;
