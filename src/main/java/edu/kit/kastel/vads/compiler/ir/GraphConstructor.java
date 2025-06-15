@@ -5,19 +5,36 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import edu.kit.kastel.vads.compiler.ir.node.*;
 import edu.kit.kastel.vads.compiler.ir.node.AddNode;
+import edu.kit.kastel.vads.compiler.ir.node.AndBWNode;
 import edu.kit.kastel.vads.compiler.ir.node.Block;
+import edu.kit.kastel.vads.compiler.ir.node.ConstBoolNode;
 import edu.kit.kastel.vads.compiler.ir.node.ConstIntNode;
 import edu.kit.kastel.vads.compiler.ir.node.DivNode;
+import edu.kit.kastel.vads.compiler.ir.node.EqualsNode;
+import edu.kit.kastel.vads.compiler.ir.node.EqualsNotNode;
+import edu.kit.kastel.vads.compiler.ir.node.GreaterEqualNode;
+import edu.kit.kastel.vads.compiler.ir.node.GreaterNode;
+import edu.kit.kastel.vads.compiler.ir.node.IfEndNode;
+import edu.kit.kastel.vads.compiler.ir.node.IfNode;
+import edu.kit.kastel.vads.compiler.ir.node.JumpNode;
+import edu.kit.kastel.vads.compiler.ir.node.LoopJumpNode;
 import edu.kit.kastel.vads.compiler.ir.node.ModNode;
 import edu.kit.kastel.vads.compiler.ir.node.MulNode;
 import edu.kit.kastel.vads.compiler.ir.node.Node;
+import edu.kit.kastel.vads.compiler.ir.node.NotBWNode;
+import edu.kit.kastel.vads.compiler.ir.node.NotNode;
+import edu.kit.kastel.vads.compiler.ir.node.OrBWNode;
 import edu.kit.kastel.vads.compiler.ir.node.Phi;
 import edu.kit.kastel.vads.compiler.ir.node.ProjNode;
 import edu.kit.kastel.vads.compiler.ir.node.ReturnNode;
+import edu.kit.kastel.vads.compiler.ir.node.ShiftLeftNode;
+import edu.kit.kastel.vads.compiler.ir.node.ShiftRightNode;
+import edu.kit.kastel.vads.compiler.ir.node.SmallerEqualNode;
+import edu.kit.kastel.vads.compiler.ir.node.SmallerNode;
 import edu.kit.kastel.vads.compiler.ir.node.StartNode;
 import edu.kit.kastel.vads.compiler.ir.node.SubNode;
+import edu.kit.kastel.vads.compiler.ir.node.XorNode;
 import edu.kit.kastel.vads.compiler.ir.optimize.Optimizer;
 import edu.kit.kastel.vads.compiler.parser.symbol.Name;
 import edu.kit.kastel.vads.compiler.parser.type.JumpType;
@@ -32,6 +49,7 @@ class GraphConstructor {
     private final Map<Block, Phi> incompleteSideEffectPhis = new HashMap<>();
     private final Set<Block> sealedBlocks = new HashSet<>();
     private Block currentBlock;
+    private final Map<Phi, Boolean> allPhis = new HashMap<>();
 
     public GraphConstructor(Optimizer optimizer, String name) {
         this.optimizer = optimizer;
@@ -41,9 +59,21 @@ class GraphConstructor {
         sealBlock(this.currentBlock);
     }
 
+    public void switchCurrentBlock(Block block) {
+        this.currentBlock = block;
+    }
+
     public Node newStart() {
         assert currentBlock() == this.graph.startBlock() : "start must be in start block";
         return new StartNode(currentBlock());
+    }
+
+    public void checkAllPhis() {
+        for(Phi phi : allPhis.keySet()) {
+            if(allPhis.get(phi)) continue;
+            tryRemoveTrivialPhi(phi);
+            allPhis.put(phi, true);
+        }
     }
 
     public Node newAdd(Node left, Node right) {
@@ -235,7 +265,9 @@ class GraphConstructor {
 
     public Phi newPhi() {
         // don't transform phi directly, it is not ready yet
-        return new Phi(currentBlock());
+        Phi phi = new Phi(currentBlock());
+        allPhis.put(phi, false);
+        return phi;
     }
 
     public IrGraph graph() {
@@ -280,7 +312,7 @@ class GraphConstructor {
 
     Node tryRemoveTrivialPhi(Phi phi) {
         Node same = null;
-        for (Node op : phi.block().predecessors()) {
+        for (Node op : phi.predecessors()) {
             if (op == same || op == phi) {
                 continue;
             }
@@ -292,12 +324,18 @@ class GraphConstructor {
         if (same == null) {
             throw new RuntimeException("Phi unreachable or in start block");
         }
-        Set<Node> users = new HashSet<Node>(phi.graph().successors(phi));
+        Set<Node> users = new HashSet(graph().successors(phi));
         users.remove(phi);
-        graph.replaceAllBy(phi, same);
         for (Node use : users) {
-            if (use instanceof Phi) {
-                tryRemoveTrivialPhi((Phi) use);
+            for (int i = 0; i < use.predecessors().size(); i++) {
+                if (use.predecessor(i) == phi) {
+                    use.setPredecessor(i, same);
+                }
+            }
+        }
+        for (Node use : users) {
+            if (use instanceof Phi phi1) {
+                tryRemoveTrivialPhi(phi1);
             }
         }
         return same;

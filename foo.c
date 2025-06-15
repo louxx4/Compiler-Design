@@ -1,4 +1,7 @@
 int main() {
-  int x = 2 < 1 ? 11 : 67;
+  int x = 4;
+  while(x > 2) {
+    x -= 1;
+  }
   return x;
 }

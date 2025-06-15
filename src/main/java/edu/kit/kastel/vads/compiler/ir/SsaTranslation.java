@@ -59,6 +59,7 @@ public class SsaTranslation {
     public IrGraph translate() {
         var visitor = new SsaTranslationVisitor();
         this.function.accept(visitor, this);
+        this.constructor.checkAllPhis();
         return this.constructor.graph();
     }
 
@@ -260,8 +261,8 @@ public class SsaTranslation {
             if (ifStatementTree.else_body() != null) {
                 ifStatementTree.else_body().accept(this, data);
             }
-            Node jumpElse = data.constructor.newJump();
             data.constructor.sealBlock(elseBody);
+            Node jumpElse = data.constructor.newJump();
             data.constructor.newBlock(jumpIf, jumpElse); //following block
             data.constructor.sealBlock(data.constructor.currentBlock());
             popSpan();
@@ -300,10 +301,26 @@ public class SsaTranslation {
         public Optional<Node> visit(WhileLoopTree whileLoopTree, SsaTranslation data) {
             pushSpan(whileLoopTree);
             Node condition = whileLoopTree.expression().accept(this, data).orElseThrow();
-            Node body = whileLoopTree.statement().accept(this, data).orElseThrow();
-            Node node = data.constructor.newWhileLoop(condition, body);
+            //create if projections for condition checking
+            ProjNode projTrue = data.constructor.newProj(condition, ProjNode.BooleanProjectionInfo.TRUE);
+            ProjNode projFalse = data.constructor.newProj(condition, ProjNode.BooleanProjectionInfo.FALSE);
+            projTrue.setSibling(projFalse);
+            projFalse.setSibling(projTrue);
+            //create body block
+            Block whileBody = data.constructor.newBlock(Block.BlockType.WHILE_BODY, projTrue);
+            whileLoopTree.statement().accept(this, data);
+            Node jumpWhile = data.constructor.newJump();
+            condition.addPredecessor(jumpWhile);
+            data.constructor.sealBlock(whileBody);
+            data.constructor.sealBlock(condition.block());
+            //create jump outside
+            Block elseBody = data.constructor.newBlock(Block.BlockType.ELSE_BODY, projFalse);
+            Node jumpEnd = data.constructor.newJump();
+            data.constructor.sealBlock(elseBody);
+            data.constructor.newBlock(jumpEnd, whileBody); //following block
+            data.constructor.sealBlock(data.constructor.currentBlock());
             popSpan();
-            return Optional.of(node);
+            return NOT_AN_EXPRESSION;
         }
 
         @Override

@@ -9,16 +9,15 @@ movq %rax, %rdi
 movq $0x3C, %rax
 syscall
 _main:
-_basic_0:
-mov $0, %r12b
-cmp $1, %r12b
-je _if_body_1
-jmp _else_body_2
-_if_body_1:
-mov $11, %r12d
-jmp _basic_3
+_while_body_0:
+mov $3, %r12d
+_basic_1:
+mov $1, %r12b
+cmp $0, %r12b
+je _else_body_2
+jmp _while_body_0
 _else_body_2:
-mov $67, %r12d
+mov $4, %r12d
 jmp _basic_3
 _basic_3:
 mov %r12d, %eax

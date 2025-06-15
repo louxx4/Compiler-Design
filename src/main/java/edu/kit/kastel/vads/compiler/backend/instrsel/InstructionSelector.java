@@ -241,6 +241,11 @@ public class InstructionSelector {
     private TempReg handlePhiNode(Phi phi, List<Instruction> builder) {
         TempReg res = newTempReg();
         for(int i = 0; i < phi.predecessors().size(); i++) {
+            Node p = phi.predecessor(i);
+            if(p instanceof ConstIntNode || p instanceof ConstBoolNode) continue;
+            maximalMunch(phi.predecessor(i), builder); //calculate phi value
+        }
+        for(int i = 0; i < phi.predecessors().size(); i++) {
             Node input_i = phi.predecessor(i);
             Node block_i = phi.block().predecessor(i);
             maximalMunch(block_i, builder, new PhiInfo(res, input_i));
@@ -276,11 +281,11 @@ public class InstructionSelector {
             case CONST_RIGHT -> {
                 TempReg t = maximalMunch(left, builder);
                 ins = new Instruction(INSTR_COUNTER++, 
-                    "cmp", t, new Immediate(children.val_r)); // left > right?
+                    "cmp", new Immediate(children.val_r), t); // right < left?
                 ins.use(t);
                 addInstruction(ins, builder, greater.block());
                 ins = new Instruction(INSTR_COUNTER++, 
-                    "setg", res); // left > right ? res = 1 : res = 0;
+                    "setl", res); // left > right ? res = 1 : res = 0;
                 ins.def(res);
                 addInstruction(ins, builder, greater.block());
             }
@@ -330,11 +335,11 @@ public class InstructionSelector {
             case CONST_RIGHT -> {
                 TempReg t = maximalMunch(left, builder);
                 ins = new Instruction(INSTR_COUNTER++, 
-                    "cmp", t, new Immediate(children.val_r)); // left >= right?
+                    "cmp", new Immediate(children.val_r), t); // right <= left?
                 ins.use(t);
                 addInstruction(ins, builder, greaterEq.block());
                 ins = new Instruction(INSTR_COUNTER++, 
-                    "setge", res); // left >= right ? res = 1 : res = 0;
+                    "setle", res); // left >= right ? res = 1 : res = 0;
                 ins.def(res);
                 addInstruction(ins, builder, greaterEq.block());
             }
@@ -384,11 +389,11 @@ public class InstructionSelector {
             case CONST_RIGHT -> {
                 TempReg t = maximalMunch(left, builder);
                 ins = new Instruction(INSTR_COUNTER++, 
-                    "cmp", t, new Immediate(children.val_r)); // left <= right?
+                    "cmp", new Immediate(children.val_r), t); // right >= left?
                 ins.use(t);
                 addInstruction(ins, builder, smallerEq.block());
                 ins = new Instruction(INSTR_COUNTER++, 
-                    "setle", res); // left <= right ? res = 1 : res = 0;
+                    "setge", res); // left <= right ? res = 1 : res = 0;
                 ins.def(res);
                 addInstruction(ins, builder, smallerEq.block());
             }
@@ -438,11 +443,11 @@ public class InstructionSelector {
             case CONST_RIGHT -> {
                 TempReg t = maximalMunch(left, builder);
                 ins = new Instruction(INSTR_COUNTER++, 
-                    "cmp", t, new Immediate(children.val_r)); // left < right?
+                    "cmp", new Immediate(children.val_r), t); // right > left?
                 ins.use(t);
                 addInstruction(ins, builder, smaller.block());
                 ins = new Instruction(INSTR_COUNTER++, 
-                    "setl", res); // left < right ? res = 1 : res = 0;
+                    "setg", res); // left < right ? res = 1 : res = 0;
                 ins.def(res);
                 addInstruction(ins, builder, smaller.block());
             }
@@ -621,7 +626,7 @@ public class InstructionSelector {
             default -> {
                 TempReg t = maximalMunch(right, builder);
                 ins = new Instruction(INSTR_COUNTER++, 
-                    "cmp", t, new BooleanValue(true)); // t == true ?
+                    "cmp", new BooleanValue(true), t); // t == true ?
                 ins.use(t);
                 addInstruction(ins, builder, not.block());
                 ins = new Instruction(INSTR_COUNTER++, 
@@ -866,7 +871,7 @@ public class InstructionSelector {
             case BOOL_LEFT -> {
                 TempReg t = maximalMunch(right, builder);
                 ins = new Instruction(INSTR_COUNTER++, 
-                    "cmp", t, new BooleanValue(children.b_l)); // left == right?
+                    "cmp", new BooleanValue(children.b_l), t); // left == right?
                 ins.use(t);
                 addInstruction(ins, builder, eq.block());
                 ins = new Instruction(INSTR_COUNTER++, 
@@ -877,7 +882,7 @@ public class InstructionSelector {
             case CONST_LEFT -> {
                 TempReg t = maximalMunch(right, builder);
                 ins = new Instruction(INSTR_COUNTER++, 
-                    "cmp", t, new Immediate(children.val_l)); // left == right?
+                    "cmp", new Immediate(children.val_l), t); // left == right?
                 ins.use(t);
                 addInstruction(ins, builder, eq.block());
                 ins = new Instruction(INSTR_COUNTER++, 
@@ -888,7 +893,7 @@ public class InstructionSelector {
             case BOOL_RIGHT -> {
                 TempReg t = maximalMunch(left, builder);
                 ins = new Instruction(INSTR_COUNTER++, 
-                    "cmp", t, new BooleanValue(children.b_r)); // left == right?
+                    "cmp", new BooleanValue(children.b_r), t); // left == right?
                 ins.use(t);
                 addInstruction(ins, builder, eq.block());
                 ins = new Instruction(INSTR_COUNTER++, 
@@ -899,7 +904,7 @@ public class InstructionSelector {
             case CONST_RIGHT -> {
                 TempReg t = maximalMunch(left, builder);
                 ins = new Instruction(INSTR_COUNTER++, 
-                    "cmp", t, new Immediate(children.val_r)); // left == right?
+                    "cmp", new Immediate(children.val_r), t); // left == right?
                 ins.use(t);
                 addInstruction(ins, builder, eq.block());
                 ins = new Instruction(INSTR_COUNTER++, 
@@ -948,7 +953,7 @@ public class InstructionSelector {
             case BOOL_LEFT -> {
                 TempReg t = maximalMunch(right, builder);
                 ins = new Instruction(INSTR_COUNTER++, 
-                    "cmp", t, new BooleanValue(children.b_l)); // left != right?
+                    "cmp", new BooleanValue(children.b_l), t); // left != right?
                 ins.use(t);
                 addInstruction(ins, builder, neq.block());
                 ins = new Instruction(INSTR_COUNTER++, 
@@ -959,7 +964,7 @@ public class InstructionSelector {
             case CONST_LEFT -> {
                 TempReg t = maximalMunch(right, builder);
                 ins = new Instruction(INSTR_COUNTER++, 
-                    "cmp", t, new Immediate(children.val_l)); // left != right?
+                    "cmp", new Immediate(children.val_l), t); // left != right?
                 ins.use(t);
                 addInstruction(ins, builder, neq.block());
                 ins = new Instruction(INSTR_COUNTER++, 
@@ -970,7 +975,7 @@ public class InstructionSelector {
             case BOOL_RIGHT -> {
                 TempReg t = maximalMunch(left, builder);
                 ins = new Instruction(INSTR_COUNTER++, 
-                    "cmp", t, new BooleanValue(children.b_r)); // left != right?
+                    "cmp", new BooleanValue(children.b_r), t); // left != right?
                 ins.use(t);
                 addInstruction(ins, builder, neq.block());
                 ins = new Instruction(INSTR_COUNTER++, 
@@ -981,7 +986,7 @@ public class InstructionSelector {
             case CONST_RIGHT -> {
                 TempReg t = maximalMunch(left, builder);
                 ins = new Instruction(INSTR_COUNTER++, 
-                    "cmp", t, new Immediate(children.val_r)); // left != right?
+                    "cmp", new Immediate(children.val_r), t); // left != right?
                 ins.use(t);
                 addInstruction(ins, builder, neq.block());
                 ins = new Instruction(INSTR_COUNTER++, 
