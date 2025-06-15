@@ -246,8 +246,10 @@ public class SsaTranslation {
             pushSpan(ifStatementTree);
             Node condition = ifStatementTree.expression().accept(this, data).orElseThrow();
             //create if projections
-            Node projTrue = data.constructor.newProj(condition, ProjNode.BooleanProjectionInfo.TRUE);
-            Node projFalse = data.constructor.newProj(condition, ProjNode.BooleanProjectionInfo.FALSE);
+            ProjNode projTrue = data.constructor.newProj(condition, ProjNode.BooleanProjectionInfo.TRUE);
+            ProjNode projFalse = data.constructor.newProj(condition, ProjNode.BooleanProjectionInfo.FALSE);
+            projTrue.setSibling(projFalse);
+            projFalse.setSibling(projTrue);
             data.constructor.sealBlock(data.constructor.currentBlock());
             //create if/else body blocks
             Block ifBody = data.constructor.newBlock(Block.BlockType.IF_BODY, projTrue);

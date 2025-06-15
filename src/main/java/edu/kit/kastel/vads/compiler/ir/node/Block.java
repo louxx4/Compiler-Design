@@ -5,6 +5,7 @@ import edu.kit.kastel.vads.compiler.ir.IrGraph;
 public final class Block extends Node {
 
     public final BlockType type;
+    private String label = null;
 
     public enum BlockType {
         BASIC, IF_BODY, ELSE_BODY
@@ -17,6 +18,23 @@ public final class Block extends Node {
 
     public Block(IrGraph graph) {
         this(graph, BlockType.BASIC);
+    }
+
+    public boolean hasLabel(){
+        return (this.label != null);
+    }
+
+    public String getLabel() {
+        return this.label;
+    }
+
+    public void createLabel(int id) {
+        this.label = "_" + this.type.name().toLowerCase() + "_" + id;
+    }
+
+    public Node getLastNode() {
+        int id = this.predecessors().size() - 1;
+        return this.predecessor(id);
     }
 
 }

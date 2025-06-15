@@ -157,8 +157,8 @@ class GraphConstructor {
         return this.optimizer.transform(new JumpNode(currentBlock()));
     }
 
-    public Node newProj(Node in, ProjNode.ProjectionInfo info) {
-        return this.optimizer.transform(new ProjNode(currentBlock(), in, info));
+    public ProjNode newProj(Node in, ProjNode.ProjectionInfo info) {
+        return (ProjNode) this.optimizer.transform(new ProjNode(currentBlock(), in, info));
     }
 
     public Node newIfNode(Node condition) {
