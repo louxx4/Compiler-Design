@@ -10,7 +10,17 @@ movq $0x3C, %rax
 syscall
 _main:
 _basic_0:
-mov $5, %r12d
+mov $0, %r12b
+cmp $1, %r12b
+je _if_body_1
+jmp _else_body_2
+_if_body_1:
+mov $11, %r12d
+jmp _basic_3
+_else_body_2:
+mov $67, %r12d
+jmp _basic_3
+_basic_3:
 mov %r12d, %eax
 cltq
 ret

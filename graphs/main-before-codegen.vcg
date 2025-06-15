@@ -20,117 +20,12 @@ graph: {
     label: "main"
     color: 106
     graph: {
-      title: "block-0"
-      label: "if-body"
-      status: clustered
-      color: 107
-      node: {
-        title: "node-0"
-      
-        label: "Jump"
-      
-        color: 100
-        info1: "I am an info text for Jump"
-      }
-    edge: {
-      sourcename: "node-1"
-      targetname: "block-0"
-      label: ""
-      color: 100
-    }
-    }
-  
-    graph: {
-      title: "block-1"
-      label: "Block"
-      status: clustered
-      color: 107
-      node: {
-        title: "node-2"
-      
-        label: "Return"
-      
-        color: 100
-        info1: "I am an info text for Return"
-      }
-      edge: {
-        sourcename: "node-3"
-        targetname: "node-2"
-        label: "0"
-        color: 105
-        priority: 50
-      }
-      edge: {
-        sourcename: "node-4"
-        targetname: "node-2"
-        label: "1"
-        color: 100
-        priority: 50
-      }
-      node: {
-        title: "node-3"
-      
-        label: "Phi"
-      
-        color: 105
-        info1: "I am an info text for Phi"
-      }
-      edge: {
-        sourcename: "node-5"
-        targetname: "node-3"
-        label: "0"
-        color: 101
-        priority: 50
-      }
-      edge: {
-        sourcename: "node-5"
-        targetname: "node-3"
-        label: "1"
-        color: 101
-        priority: 50
-      }
-    edge: {
-      sourcename: "node-0"
-      targetname: "block-1"
-      label: ""
-      color: 100
-    }
-    edge: {
-      sourcename: "node-6"
-      targetname: "block-1"
-      label: ""
-      color: 100
-    }
-    }
-  
-    graph: {
-      title: "block-2"
-      label: "else-body"
-      status: clustered
-      color: 107
-      node: {
-        title: "node-6"
-      
-        label: "Jump"
-      
-        color: 100
-        info1: "I am an info text for Jump"
-      }
-    edge: {
-      sourcename: "node-7"
-      targetname: "block-2"
-      label: ""
-      color: 100
-    }
-    }
-  
-    graph: {
       title: "end-block"
       label: "end-block"
       status: clustered
       color: 107
     edge: {
-      sourcename: "node-2"
+      sourcename: "node-0"
       targetname: "end-block"
       label: ""
       color: 100
@@ -143,6 +38,42 @@ graph: {
       status: clustered
       color: 107
       node: {
+        title: "node-1"
+      
+        label: "Smaller"
+      
+        color: 102
+        info1: "I am an info text for Smaller"
+      }
+      edge: {
+        sourcename: "node-2"
+        targetname: "node-1"
+        label: "0"
+        priority: 50
+      }
+      edge: {
+        sourcename: "node-3"
+        targetname: "node-1"
+        label: "1"
+        priority: 50
+      }
+      node: {
+        title: "node-4"
+      
+        label: "Start"
+      
+        color: 100
+        info1: "I am an info text for Start"
+      }
+      node: {
+        title: "node-3"
+      
+        label: "ConstInt [1]"
+      
+        color: 102
+        info1: "I am an info text for ConstInt [1]"
+      }
+      node: {
         title: "node-5"
       
         label: "Proj SIDE_EFFECT"
@@ -151,44 +82,38 @@ graph: {
         info1: "I am an info text for Proj SIDE_EFFECT"
       }
       edge: {
-        sourcename: "node-8"
+        sourcename: "node-4"
         targetname: "node-5"
         label: "0"
         color: 100
         priority: 50
       }
       node: {
-        title: "node-8"
+        title: "node-2"
       
-        label: "Start"
-      
-        color: 100
-        info1: "I am an info text for Start"
-      }
-      node: {
-        title: "node-4"
-      
-        label: "ConstInt [5]"
+        label: "ConstInt [2]"
       
         color: 102
-        info1: "I am an info text for ConstInt [5]"
+        info1: "I am an info text for ConstInt [2]"
       }
       node: {
-        title: "node-1"
+        title: "node-6"
       
-        label: "Proj TRUE"
+        label: "ConstInt [67]"
       
         color: 102
-        info1: "I am an info text for Proj TRUE"
-      }
-      edge: {
-        sourcename: "node-9"
-        targetname: "node-1"
-        label: "0"
-        priority: 50
+        info1: "I am an info text for ConstInt [67]"
       }
       node: {
         title: "node-7"
+      
+        label: "ConstInt [11]"
+      
+        color: 102
+        info1: "I am an info text for ConstInt [11]"
+      }
+      node: {
+        title: "node-8"
       
         label: "Proj FALSE"
       
@@ -196,48 +121,153 @@ graph: {
         info1: "I am an info text for Proj FALSE"
       }
       edge: {
-        sourcename: "node-9"
-        targetname: "node-7"
+        sourcename: "node-1"
+        targetname: "node-8"
         label: "0"
         priority: 50
       }
       node: {
         title: "node-9"
       
-        label: "Smaller"
+        label: "Proj TRUE"
       
         color: 102
-        info1: "I am an info text for Smaller"
+        info1: "I am an info text for Proj TRUE"
       }
       edge: {
-        sourcename: "node-10"
+        sourcename: "node-1"
         targetname: "node-9"
         label: "0"
         priority: 50
       }
-      edge: {
-        sourcename: "node-11"
-        targetname: "node-9"
-        label: "1"
-        priority: 50
-      }
-      node: {
-        title: "node-11"
-      
-        label: "ConstInt [6]"
-      
-        color: 102
-        info1: "I am an info text for ConstInt [6]"
-      }
+    
+    }
+  
+    graph: {
+      title: "block-0"
+      label: "else-body"
+      status: clustered
+      color: 107
       node: {
         title: "node-10"
       
-        label: "ConstInt [7]"
+        label: "Jump"
       
-        color: 102
-        info1: "I am an info text for ConstInt [7]"
+        color: 100
+        info1: "I am an info text for Jump"
       }
-    
+    edge: {
+      sourcename: "node-8"
+      targetname: "block-0"
+      label: ""
+      color: 100
+    }
+    }
+  
+    graph: {
+      title: "block-1"
+      label: "if-body"
+      status: clustered
+      color: 107
+      node: {
+        title: "node-11"
+      
+        label: "Jump"
+      
+        color: 100
+        info1: "I am an info text for Jump"
+      }
+    edge: {
+      sourcename: "node-9"
+      targetname: "block-1"
+      label: ""
+      color: 100
+    }
+    }
+  
+    graph: {
+      title: "block-2"
+      label: "Block"
+      status: clustered
+      color: 107
+      node: {
+        title: "node-12"
+      
+        label: "Phi"
+      
+        color: 105
+        info1: "I am an info text for Phi"
+      }
+      edge: {
+        sourcename: "node-5"
+        targetname: "node-12"
+        label: "0"
+        color: 101
+        priority: 50
+      }
+      edge: {
+        sourcename: "node-5"
+        targetname: "node-12"
+        label: "1"
+        color: 101
+        priority: 50
+      }
+      node: {
+        title: "node-0"
+      
+        label: "Return"
+      
+        color: 100
+        info1: "I am an info text for Return"
+      }
+      edge: {
+        sourcename: "node-12"
+        targetname: "node-0"
+        label: "0"
+        color: 105
+        priority: 50
+      }
+      edge: {
+        sourcename: "node-13"
+        targetname: "node-0"
+        label: "1"
+        color: 105
+        priority: 50
+      }
+      node: {
+        title: "node-13"
+      
+        label: "Phi"
+      
+        color: 105
+        info1: "I am an info text for Phi"
+      }
+      edge: {
+        sourcename: "node-7"
+        targetname: "node-13"
+        label: "0"
+        color: 105
+        priority: 50
+      }
+      edge: {
+        sourcename: "node-6"
+        targetname: "node-13"
+        label: "1"
+        color: 105
+        priority: 50
+      }
+    edge: {
+      sourcename: "node-11"
+      targetname: "block-2"
+      label: ""
+      color: 100
+    }
+    edge: {
+      sourcename: "node-10"
+      targetname: "block-2"
+      label: ""
+      color: 100
+    }
     }
   }
 }

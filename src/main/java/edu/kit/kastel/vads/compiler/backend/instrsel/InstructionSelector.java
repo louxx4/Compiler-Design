@@ -16,6 +16,7 @@ import edu.kit.kastel.vads.compiler.ir.node.EqualsNode;
 import edu.kit.kastel.vads.compiler.ir.node.EqualsNotNode;
 import edu.kit.kastel.vads.compiler.ir.node.GreaterEqualNode;
 import edu.kit.kastel.vads.compiler.ir.node.GreaterNode;
+import edu.kit.kastel.vads.compiler.ir.node.IfEndNode;
 import edu.kit.kastel.vads.compiler.ir.node.JumpNode;
 import edu.kit.kastel.vads.compiler.ir.node.LoopJumpNode;
 import edu.kit.kastel.vads.compiler.ir.node.ModNode;
@@ -117,6 +118,7 @@ public class InstructionSelector {
                 case SmallerNode smaller        -> res = handleSmallerNode(smaller, builder);
                 case SmallerEqualNode smallerEq -> res = handleSmallerEqualNode(smallerEq, builder);
                 case JumpNode jumpNode          -> res = handleJumpNode(jumpNode, builder, phiInfo);
+                case IfEndNode ifEndNode        -> res = handleIfEndNode(ifEndNode, builder, phiInfo);
                 case LoopJumpNode loopNode      -> res = null; //TODO
                 case Phi phi                    -> res = handlePhiNode(phi, builder);
                 default -> {
@@ -201,6 +203,10 @@ public class InstructionSelector {
             HANDLED_BLOCKS.add(CURRENT_BLOCK);
         }
         builder.add(ins);
+    }
+
+    private TempReg handleIfEndNode(IfEndNode ifEndNode, List<Instruction> builder, PhiInfo phiInfo) {
+        return null;
     }
 
     private TempReg handleJumpNode(JumpNode jumpNode, List<Instruction> builder, PhiInfo phiInfo) {

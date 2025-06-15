@@ -273,20 +273,27 @@ public class SsaTranslation {
             pushSpan(conditionalTree);
             Node condition = conditionalTree.lhs().accept(this, data).orElseThrow();
             //create if projections
-            Node ifNode = data.constructor.newIfNode(condition);
-            Node projTrue = data.constructor.newProj(ifNode, ProjNode.BooleanProjectionInfo.TRUE);
-            ifNode.addPredecessor(projTrue);
-            Node projFalse = data.constructor.newProj(ifNode, ProjNode.BooleanProjectionInfo.FALSE);
-            ifNode.addPredecessor(projFalse);
-            //create if/else body nodes
-            Node ifExpression = conditionalTree.if_expression().accept(this, data).orElseThrow();
-            Node elseExpression = conditionalTree.else_expression().accept(this, data).orElseThrow();
-            ifExpression.addPredecessor(projTrue);
-            elseExpression.addPredecessor(projFalse);
+            ProjNode projTrue = data.constructor.newProj(condition, ProjNode.BooleanProjectionInfo.TRUE);
+            ProjNode projFalse = data.constructor.newProj(condition, ProjNode.BooleanProjectionInfo.FALSE);
+            projTrue.setSibling(projFalse);
+            projFalse.setSibling(projTrue);
+            //create if/else body blocks
+            Block ifBody = data.constructor.newBlock(Block.BlockType.IF_BODY, projTrue);
+            Node ifValue = conditionalTree.if_expression().accept(this, data).orElseThrow();
+            Node jumpIf = data.constructor.newJump();
+            data.constructor.sealBlock(ifBody);
+            Block elseBody = data.constructor.newBlock(Block.BlockType.ELSE_BODY, projFalse);
+            Node elseValue = conditionalTree.else_expression().accept(this, data).orElseThrow();
+            Node jumpElse = data.constructor.newJump();
+            data.constructor.sealBlock(elseBody);
+            data.constructor.newBlock(jumpIf, jumpElse); //following block
+            data.constructor.sealBlock(data.constructor.currentBlock());
             //create join node
-            Node ifEndNode = data.constructor.newIfEndNode(ifExpression, elseExpression);
+            Node phi = data.constructor.newPhi();
+            phi.addPredecessor(ifValue);
+            phi.addPredecessor(elseValue);
             popSpan();
-            return Optional.of(ifEndNode);
+            return Optional.of(phi);
         }
 
         @Override

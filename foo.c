@@ -1,7 +1,4 @@
 int main() {
-  int x = 7;
-  if(x < 6) {
-    x = 1;
-  }
-  return 5;
+  int x = 2 < 1 ? 11 : 67;
+  return x;
 }
