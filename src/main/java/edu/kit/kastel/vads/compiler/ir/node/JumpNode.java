@@ -7,11 +7,7 @@ public final class JumpNode extends Node {
         super(block, predecessors);
     }
 
-    public static Node getPredecessor(JumpNode node) {
-        if(node.predecessors().isEmpty()) {
-            return node.block().predecessor(0);
-        } else {
-            return node.predecessor(JumpNode.IN);
-        }
+    public boolean isPureJump() {
+        return (this.predecessors().isEmpty());
     }
 }

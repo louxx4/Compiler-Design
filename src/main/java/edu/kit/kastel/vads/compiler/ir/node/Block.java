@@ -8,7 +8,7 @@ public final class Block extends Node {
     private String label = null;
 
     public enum BlockType {
-        BASIC, IF_BODY, ELSE_BODY, WHILE_BODY
+        BASIC, IF_BODY, ELSE_BODY, AFTER_IF, WHILE_BODY
     }
 
     public Block(IrGraph graph, BlockType type) {

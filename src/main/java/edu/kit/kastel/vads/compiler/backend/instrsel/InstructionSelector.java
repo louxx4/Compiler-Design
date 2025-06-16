@@ -1,8 +1,10 @@
 package edu.kit.kastel.vads.compiler.backend.instrsel;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import edu.kit.kastel.vads.compiler.ir.IrGraph;
@@ -59,7 +61,7 @@ public class InstructionSelector {
 
     private Integer REG_COUNTER = 0;
     private Integer INSTR_COUNTER = 1;
-    private Integer LABEL_COUNTER = 0;
+    private Map<Block.BlockType, Integer> LABEL_COUNTER = new HashMap<>();
     private IrGraph CURRENT_GRAPH;
     private Block CURRENT_BLOCK;
     public Set<Block> HANDLED_BLOCKS = new HashSet(); //holds all handled blocks (= label was printed)
@@ -72,6 +74,7 @@ public class InstructionSelector {
         List<Instruction> builder = new ArrayList<>();
         for (IrGraph functionGraph : irGraphs) {
             // String funcName = functionGraph.name();
+            initLabelCounter();
             CURRENT_GRAPH = functionGraph;
             CURRENT_BLOCK = functionGraph.endBlock();
             if(CURRENT_BLOCK.predecessors().size() == 1) {
@@ -95,6 +98,12 @@ public class InstructionSelector {
                 "cltq"), builder, lastBlock);
         }
         return builder;
+    }
+    
+    private void initLabelCounter() {
+        for(Block.BlockType type : Block.BlockType.values()) {
+            LABEL_COUNTER.put(type, 0);
+        }
     }
 
     public TempReg maximalMunch(Node node, List<Instruction> builder) {
@@ -194,7 +203,9 @@ public class InstructionSelector {
 
     private String getLabel(Block block) {
         if(!block.hasLabel()) {
-            block.createLabel(LABEL_COUNTER++);
+            int nextFreeId = LABEL_COUNTER.get(block.type);
+            block.createLabel(nextFreeId);
+            LABEL_COUNTER.put(block.type, nextFreeId + 1);
         }
         return block.getLabel();
     }
@@ -221,13 +232,27 @@ public class InstructionSelector {
     }   
 
     private TempReg handleJumpNode(JumpNode jumpNode, List<Instruction> builder, PhiInfo phiInfo) {
-        TempReg res = maximalMunch(JumpNode.getPredecessor(jumpNode), builder);
+        TempReg res = null; 
+        if(jumpNode.isPureJump()) {
+            for(Node blockPrecessor : jumpNode.block().predecessors()) {
+                maximalMunch(blockPrecessor, builder);
+            }
+        } else {
+            //block contains other instructions as well
+            res = maximalMunch(jumpNode.predecessor(JumpNode.IN), builder);
+        }
 
         if(phiInfo.isDefined()) {
             switch(phiInfo.source) {
                 case ConstIntNode c -> {
                     Instruction ins = new Instruction(INSTR_COUNTER++, 
                         "mov", new Immediate(c.value()), phiInfo.target);
+                    ins.def(phiInfo.target);
+                    addInstruction(ins, builder, jumpNode.block());
+                }
+                case ConstBoolNode c -> {
+                    Instruction ins = new Instruction(INSTR_COUNTER++, 
+                        "mov", new Immediate(c.intValue()), phiInfo.target);
                     ins.def(phiInfo.target);
                     addInstruction(ins, builder, jumpNode.block());
                 }
@@ -243,14 +268,14 @@ public class InstructionSelector {
             
         }
         String targetLabel = getLabel(getNextBlock(jumpNode));
-        addJumpInstruction(targetLabel, builder);
+        addJumpInstruction(targetLabel, builder, jumpNode.block());
 
         return res;
     }
 
-    private void addJumpInstruction(String targetLabel, List<Instruction> builder) {
-        builder.add(new Instruction(INSTR_COUNTER++, 
-            "jmp", new Label(targetLabel)));
+    private void addJumpInstruction(String targetLabel, List<Instruction> builder, Block block) {
+        addInstruction(new Instruction(INSTR_COUNTER++, 
+            "jmp", new Label(targetLabel)), builder, block);
     }
 
     private TempReg handlePhiNode(Phi phi, List<Instruction> builder) {
@@ -1059,7 +1084,7 @@ public class InstructionSelector {
         }
 
         String targetLabel = getLabel(CURRENT_GRAPH.endBlock());
-        addJumpInstruction(targetLabel, builder);
+        addJumpInstruction(targetLabel, builder, ret.block());
 
         return RES_REG;
     }

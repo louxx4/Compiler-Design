@@ -263,7 +263,7 @@ public class SsaTranslation {
             }
             Node jumpElse = data.constructor.newJump();
             data.constructor.sealBlock(elseBody);
-            data.constructor.newBlock(jumpIf, jumpElse); //following block
+            data.constructor.newBlock(Block.BlockType.AFTER_IF, jumpIf, jumpElse); //following block
             data.constructor.sealBlock(data.constructor.currentBlock());
             popSpan();
             return NOT_AN_EXPRESSION;
@@ -287,7 +287,7 @@ public class SsaTranslation {
             Node elseValue = conditionalTree.else_expression().accept(this, data).orElseThrow();
             Node jumpElse = data.constructor.newJump();
             data.constructor.sealBlock(elseBody);
-            data.constructor.newBlock(jumpIf, jumpElse); //following block
+            data.constructor.newBlock(Block.BlockType.AFTER_IF, jumpIf, jumpElse); //following block
             data.constructor.sealBlock(data.constructor.currentBlock());
             //create join node
             Node phi = data.constructor.newPhi();

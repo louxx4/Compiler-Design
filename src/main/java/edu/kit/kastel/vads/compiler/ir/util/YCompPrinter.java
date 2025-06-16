@@ -258,8 +258,12 @@ public class YCompPrinter {
             return "end-block";
         } else if(node instanceof Block) {
             Block bnode = (Block) node;
-            if(bnode.type == Block.BlockType.IF_BODY) return "if-body";
-            else if(bnode.type == Block.BlockType.ELSE_BODY) return "else-body";
+            if(null != bnode.type) return switch (bnode.type) {
+                case IF_BODY -> "if-body";
+                case ELSE_BODY -> "else-body";
+                case AFTER_IF -> "after-if";
+                default -> "block";
+            };
         }
         return node.toString();
     }

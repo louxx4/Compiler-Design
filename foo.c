@@ -1,7 +1,4 @@
 int main() {
-    if (!true) {
-        return 1;
-    } else {
-        return 2;
-    }
+  bool b = true || false && false;
+  return b ? 52 : 84;
 }
