@@ -209,7 +209,7 @@ public class Lexer {
 
     private Token singleOrAssignOrShiftOrShiftAssign(OperatorType single, OperatorType assign, OperatorType shift, OperatorType shift_assign) {
         if (hasMore(1) && peek(1) == single.toString().charAt(0)) { //next char is "<" or ">" (depending on single type)
-            if (hasMore(1) && peek(1) == '=') {
+            if (hasMore(1) && peek(2) == '=') {
                 return new Operator(shift_assign, buildSpan(3));
             }
             return new Operator(shift, buildSpan(2));

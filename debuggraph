@@ -7,94 +7,30 @@ digraph "main" {
 
     subgraph cluster_0 {
         c_0 [width=0, height=0, fixedsize=true, style=invis];
-        1 [label="Jump", tooltip="source span: [2:9|2:20]"];
-    }
-
-    subgraph cluster_2 {
-        c_2 [width=0, height=0, fixedsize=true, style=invis];
-        3 [label="Proj FALSE", tooltip="source span: [2:9|2:20]"];
-        4 [label="Phi", tooltip="source span: [1:11|1:27]"];
-        5 [label="Proj TRUE", tooltip="source span: [2:9|2:20]"];
-    }
-
-    subgraph cluster_6 {
-        c_6 [width=0, height=0, fixedsize=true, style=invis];
-        7 [label="Jump", tooltip="source span: [1:19|1:27]"];
-    }
-
-    subgraph cluster_8 {
-        c_8 [width=0, height=0, fixedsize=true, style=invis];
-        9 [label="Jump", tooltip="source span: [2:9|2:20]"];
-    }
-
-    subgraph cluster_10 {
-        c_10 [width=0, height=0, fixedsize=true, style=invis];
-        11 [label="Jump", tooltip="source span: [1:11|1:27]"];
-    }
-
-    subgraph cluster_12 {
-        c_12 [width=0, height=0, fixedsize=true, style=invis];
-        13 [label="Jump", tooltip="source span: [1:11|1:27]"];
-    }
-
-    subgraph cluster_14 {
-        c_14 [width=0, height=0, fixedsize=true, style=invis];
-        15 [label="Proj FALSE", tooltip="source span: [1:19|1:27]"];
-        16 [label="Proj TRUE", tooltip="source span: [1:19|1:27]"];
-    }
-
-    subgraph cluster_17 {
-        c_17 [width=0, height=0, fixedsize=true, style=invis];
-        18 [label="Proj FALSE", tooltip="source span: [1:11|1:27]"];
-        19 [label="Start", tooltip="source span: [0:0|3:1]"];
-        20 [label="ConstInt [84]", tooltip="source span: [2:18|2:20]"];
-        21 [label="ConstBool [false]", tooltip="source span: [1:19|1:24]"];
-        22 [label="Proj TRUE", tooltip="source span: [1:11|1:27]"];
-        23 [label="ConstBool [true]", tooltip="source span: [1:11|1:15]"];
-        24 [label="ConstInt [52]", tooltip="source span: [2:13|2:15]"];
-        25 [label="Proj SIDE_EFFECT", tooltip="source span: [0:0|3:1]"];
-    }
-
-    subgraph cluster_26 {
-        c_26 [width=0, height=0, fixedsize=true, style=invis];
-        27 [label="Return", tooltip="source span: [2:2|2:20]"];
-        28 [label="Phi", tooltip="source span: [2:9|2:20]"];
-    }
-
-    subgraph cluster_29 {
-        c_29 [width=0, height=0, fixedsize=true, style=invis];
         label=End;
     }
 
-    subgraph cluster_30 {
-        c_30 [width=0, height=0, fixedsize=true, style=invis];
-        31 [label="Jump", tooltip="source span: [1:19|1:27]"];
+    subgraph cluster_1 {
+        c_1 [width=0, height=0, fixedsize=true, style=invis];
+        2 [label="Return", tooltip="source span: [4:4|4:17]"];
+        3 [label="Proj SIDE_EFFECT", tooltip="source span: [4:12|4:17]"];
+        4 [label="Proj SIDE_EFFECT", tooltip="source span: [0:0|5:1]"];
+        5 [label="Div", tooltip="source span: [4:12|4:17]"];
+        6 [label="ShiftRight", tooltip="source span: [2:4|2:11]"];
+        7 [label="Start", tooltip="source span: [0:0|5:1]"];
+        8 [label="Proj RESULT", tooltip="source span: [4:12|4:17]"];
+        9 [label="ConstInt [1]", tooltip="source span: [1:12|1:13]"];
     }
 
-    27 -> c_29 [label=0, lhead=cluster_29];
-    9 -> c_26 [label=0, lhead=cluster_26];
-    5 -> c_8 [label=0, lhead=cluster_8];
-    11 -> c_2 [label=0, lhead=cluster_2];
-    22 -> c_10 [label=0, lhead=cluster_10];
-    23 -> 22 [label=0];
-    13 -> c_2 [label=1, lhead=cluster_2];
-    31 -> c_12 [label=0, lhead=cluster_12];
-    16 -> c_30 [label=0, lhead=cluster_30];
-    18 -> c_14 [label=0, lhead=cluster_14];
-    23 -> 18 [label=0];
-    21 -> 16 [label=0];
-    7 -> c_12 [label=1, lhead=cluster_12];
-    15 -> c_6 [label=0, lhead=cluster_6];
-    21 -> 15 [label=0];
-    4 -> 5 [label=0];
-    23 -> 4 [label=0];
-    21 -> 4 [label=1];
-    1 -> c_26 [label=1, lhead=cluster_26];
-    3 -> c_0 [label=0, lhead=cluster_0];
-    4 -> 3 [label=0];
-    25 -> 27 [label=0];
-    19 -> 25 [label=0];
-    28 -> 27 [label=1];
-    24 -> 28 [label=0];
-    20 -> 28 [label=1];
+    2 -> c_0 [label=0, lhead=cluster_0];
+    3 -> 2 [label=0];
+    5 -> 3 [label=0];
+    9 -> 5 [label=0];
+    6 -> 5 [label=1];
+    9 -> 6 [label=0];
+    9 -> 6 [label=1];
+    4 -> 5 [label=2];
+    7 -> 4 [label=0];
+    8 -> 2 [label=1];
+    5 -> 8 [label=0];
 }
