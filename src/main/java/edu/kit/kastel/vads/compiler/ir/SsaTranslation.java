@@ -100,8 +100,8 @@ public class SsaTranslation {
                 case ASSIGN_MUL -> data.constructor::newMul;
                 case ASSIGN_DIV -> (lhs, rhs) -> projResultDivMod(data, data.constructor.newDiv(lhs, rhs));
                 case ASSIGN_MOD -> (lhs, rhs) -> projResultDivMod(data, data.constructor.newMod(lhs, rhs));
-                case ASSIGN_AND -> data.constructor::newAnd;
-                case ASSIGN_OR -> data.constructor::newOr;
+                case ASSIGN_AND -> data.constructor::newAndBW;
+                case ASSIGN_OR -> data.constructor::newOrBW;
                 case ASSIGN_XOR -> data.constructor::newXor;
                 case ASSIGN_SHL -> data.constructor::newShl;
                 case ASSIGN_SHR -> data.constructor::newShr;
@@ -134,6 +134,11 @@ public class SsaTranslation {
                 case MUL -> data.constructor.newMul(lhs, rhs);
                 case DIV -> projResultDivMod(data, data.constructor.newDiv(lhs, rhs));
                 case MOD -> projResultDivMod(data, data.constructor.newMod(lhs, rhs));
+                case AND_BW -> data.constructor.newAndBW(lhs, rhs);
+                case OR_BW -> data.constructor.newOrBW(lhs, rhs);
+                case XOR_BW -> data.constructor.newXor(lhs, rhs);
+                case SHL -> data.constructor.newShl(lhs, rhs);
+                case SHR -> data.constructor.newShr(lhs, rhs);
                 default ->
                     throw new IllegalArgumentException("not a binary expression operator " + binaryOperationTree.operatorType());
             };
@@ -390,8 +395,6 @@ public class SsaTranslation {
                 case GEQ -> data.constructor.newGeq(lhs, rhs);
                 case EQ -> data.constructor.newEq(lhs, rhs);
                 case NEQ -> data.constructor.newNeq(lhs, rhs);
-                case AND -> data.constructor.newAnd(lhs, rhs);
-                case OR -> data.constructor.newOr(lhs, rhs);
                 default ->
                         throw new IllegalArgumentException("not a logical expression operator " + logicalOperationTree.operatorType());
             };

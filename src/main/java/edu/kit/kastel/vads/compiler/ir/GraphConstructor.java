@@ -113,11 +113,11 @@ class GraphConstructor {
         return this.optimizer.transform(new NotNode(currentBlock(), right));
     }
 
-    public Node newAnd(Node left, Node right) {
+    public Node newAndBW(Node left, Node right) {
         return this.optimizer.transform(new AndBWNode(currentBlock(), left, right));
     }
 
-    public Node newOr(Node left, Node right) {
+    public Node newOrBW(Node left, Node right) {
         return this.optimizer.transform(new OrBWNode(currentBlock(), left, right));
     }
 

@@ -38,29 +38,15 @@ graph: {
       status: clustered
       color: 107
       node: {
-        title: "node-0"
+        title: "node-1"
       
-        label: "Return"
+        label: "ConstInt [16]"
       
-        color: 100
-        info1: "I am an info text for Return"
-      }
-      edge: {
-        sourcename: "node-1"
-        targetname: "node-0"
-        label: "0"
-        color: 101
-        priority: 50
-      }
-      edge: {
-        sourcename: "node-2"
-        targetname: "node-0"
-        label: "1"
-        color: 100
-        priority: 50
+        color: 102
+        info1: "I am an info text for ConstInt [16]"
       }
       node: {
-        title: "node-1"
+        title: "node-2"
       
         label: "Proj SIDE_EFFECT"
       
@@ -69,18 +55,119 @@ graph: {
       }
       edge: {
         sourcename: "node-3"
-        targetname: "node-1"
+        targetname: "node-2"
         label: "0"
         color: 100
         priority: 50
       }
       node: {
-        title: "node-2"
+        title: "node-4"
+      
+        label: "ConstInt [42]"
+      
+        color: 102
+        info1: "I am an info text for ConstInt [42]"
+      }
+      node: {
+        title: "node-5"
+      
+        label: "Sub"
+      
+        color: 102
+        info1: "I am an info text for Sub"
+      }
+      edge: {
+        sourcename: "node-6"
+        targetname: "node-5"
+        label: "0"
+        priority: 50
+      }
+      edge: {
+        sourcename: "node-1"
+        targetname: "node-5"
+        label: "1"
+        priority: 50
+      }
+      node: {
+        title: "node-7"
+      
+        label: "ConstInt [4]"
+      
+        color: 102
+        info1: "I am an info text for ConstInt [4]"
+      }
+      node: {
+        title: "node-0"
+      
+        label: "Return"
+      
+        color: 100
+        info1: "I am an info text for Return"
+      }
+      edge: {
+        sourcename: "node-8"
+        targetname: "node-0"
+        label: "0"
+        color: 101
+        priority: 50
+      }
+      edge: {
+        sourcename: "node-9"
+        targetname: "node-0"
+        label: "1"
+        color: 100
+        priority: 50
+      }
+      node: {
+        title: "node-10"
+      
+        label: "Add"
+      
+        color: 102
+        info1: "I am an info text for Add"
+      }
+      edge: {
+        sourcename: "node-11"
+        targetname: "node-10"
+        label: "0"
+        priority: 50
+      }
+      edge: {
+        sourcename: "node-12"
+        targetname: "node-10"
+        label: "1"
+        priority: 50
+      }
+      node: {
+        title: "node-6"
       
         label: "ConstInt [0]"
       
         color: 102
         info1: "I am an info text for ConstInt [0]"
+      }
+      node: {
+        title: "node-12"
+      
+        label: "ConstInt [1]"
+      
+        color: 102
+        info1: "I am an info text for ConstInt [1]"
+      }
+      node: {
+        title: "node-8"
+      
+        label: "Proj SIDE_EFFECT"
+      
+        color: 101
+        info1: "I am an info text for Proj SIDE_EFFECT"
+      }
+      edge: {
+        sourcename: "node-13"
+        targetname: "node-8"
+        label: "0"
+        color: 101
+        priority: 50
       }
       node: {
         title: "node-3"
@@ -89,6 +176,67 @@ graph: {
       
         color: 100
         info1: "I am an info text for Start"
+      }
+      node: {
+        title: "node-11"
+      
+        label: "ShiftRight"
+      
+        color: 102
+        info1: "I am an info text for ShiftRight"
+      }
+      edge: {
+        sourcename: "node-5"
+        targetname: "node-11"
+        label: "0"
+        priority: 50
+      }
+      edge: {
+        sourcename: "node-7"
+        targetname: "node-11"
+        label: "1"
+        priority: 50
+      }
+      node: {
+        title: "node-13"
+      
+        label: "Div"
+      
+        color: 102
+        info1: "I am an info text for Div"
+      }
+      edge: {
+        sourcename: "node-4"
+        targetname: "node-13"
+        label: "0"
+        priority: 50
+      }
+      edge: {
+        sourcename: "node-10"
+        targetname: "node-13"
+        label: "1"
+        priority: 50
+      }
+      edge: {
+        sourcename: "node-2"
+        targetname: "node-13"
+        label: "2"
+        color: 101
+        priority: 50
+      }
+      node: {
+        title: "node-9"
+      
+        label: "Proj RESULT"
+      
+        color: 102
+        info1: "I am an info text for Proj RESULT"
+      }
+      edge: {
+        sourcename: "node-13"
+        targetname: "node-9"
+        label: "0"
+        priority: 50
       }
     
     }

@@ -1,5 +1,4 @@
 int main() {
-    bool a = true;
-    a &= true;
-    return 0;
+    int a = -16;
+    return 42 / ((a >> 4) + 1);
 }

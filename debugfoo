@@ -1,7 +1,17 @@
 2: _basic_0:                  {live: }
-1: mov $0, %t0                {live: }
-3: jmp _basic_1               {live: %t0}
-5: _basic_1:                  {live: %t0}
-4: mov %t0, %eax              {live: %t0}
-6: cltq                       {live: }
-7: ret                        {live: }
+1: mov $-16, %t4              {live: }
+3: mov %t4, %t3               {live: %t4}
+4: sar $4, %t3                {live: %t3}
+5: mov %t3, %t2               {live: %t3}
+6: add $1, %t2                {live: %t2}
+7: mov $42, %eax              {live: %t2}
+8: cltq                       {live: %t2}
+9: cqto                       {live: %t2}
+10: idiv %t2                  {live: %t2}
+11: mov %eax, %t1             {live: }
+12: mov %t1, %t0              {live: %t1}
+13: jmp _basic_1              {live: %t0}
+15: _basic_1:                 {live: %t0}
+14: mov %t0, %eax             {live: %t0}
+16: cltq                      {live: }
+17: ret                       {live: }
