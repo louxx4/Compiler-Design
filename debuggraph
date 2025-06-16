@@ -12,25 +12,14 @@ digraph "main" {
 
     subgraph cluster_1 {
         c_1 [width=0, height=0, fixedsize=true, style=invis];
-        2 [label="Return", tooltip="source span: [4:4|4:17]"];
-        3 [label="Proj SIDE_EFFECT", tooltip="source span: [4:12|4:17]"];
-        4 [label="Proj SIDE_EFFECT", tooltip="source span: [0:0|5:1]"];
-        5 [label="Div", tooltip="source span: [4:12|4:17]"];
-        6 [label="ShiftRight", tooltip="source span: [2:4|2:11]"];
-        7 [label="Start", tooltip="source span: [0:0|5:1]"];
-        8 [label="Proj RESULT", tooltip="source span: [4:12|4:17]"];
-        9 [label="ConstInt [1]", tooltip="source span: [1:12|1:13]"];
+        2 [label="Return", tooltip="source span: [3:4|3:12]"];
+        3 [label="Proj SIDE_EFFECT", tooltip="source span: [0:0|4:1]"];
+        4 [label="ConstInt [0]", tooltip="source span: [3:11|3:12]"];
+        5 [label="Start", tooltip="source span: [0:0|4:1]"];
     }
 
     2 -> c_0 [label=0, lhead=cluster_0];
     3 -> 2 [label=0];
     5 -> 3 [label=0];
-    9 -> 5 [label=0];
-    6 -> 5 [label=1];
-    9 -> 6 [label=0];
-    9 -> 6 [label=1];
-    4 -> 5 [label=2];
-    7 -> 4 [label=0];
-    8 -> 2 [label=1];
-    5 -> 8 [label=0];
+    4 -> 2 [label=1];
 }

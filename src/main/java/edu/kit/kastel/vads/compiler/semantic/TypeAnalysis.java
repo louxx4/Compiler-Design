@@ -49,12 +49,17 @@ class TypeAnalysis implements NoOpVisitor<TypeContext> {
     @Override
     public Unit visit(AssignmentTree assignmentTree, TypeContext context) {
         TypeStatus t1;
+        boolean hasToBeInt = (assignmentTree.operator().type() != OperatorType.ASSIGN);
         switch(assignmentTree.lValue()) {
             case LValueIdentTree identTree -> 
                 t1 = context.get(identTree.nameTree().name(), assignmentTree.block());
         }
+        if(hasToBeInt && t1 != TypeStatus.INT) 
+            signalInvalidOperand(assignmentTree.lValue(), t1, TypeStatus.INT);
         TypeStatus t2 = context.get(assignmentTree.expression());
         if(t1 != t2) signalMismatchingOperands(assignmentTree, t1, t2);
+        if(hasToBeInt && t2 != TypeStatus.INT) 
+            signalInvalidOperand(assignmentTree.expression(), t2, TypeStatus.INT);
         context.put(assignmentTree, TypeStatus.VALID);
         return NoOpVisitor.super.visit(assignmentTree, context);
     }
