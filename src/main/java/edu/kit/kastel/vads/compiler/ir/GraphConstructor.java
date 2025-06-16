@@ -49,6 +49,7 @@ class GraphConstructor {
     private final Map<Block, Phi> incompleteSideEffectPhis = new HashMap<>();
     private final Set<Block> sealedBlocks = new HashSet<>();
     private Block currentBlock;
+    private Set<Block> hasReturn = new HashSet<>();
     private final Map<Phi, Boolean> allPhis = new HashMap<>();
 
     public GraphConstructor(Optimizer optimizer, String name) {
@@ -66,6 +67,10 @@ class GraphConstructor {
     public Node newStart() {
         assert currentBlock() == this.graph.startBlock() : "start must be in start block";
         return new StartNode(currentBlock());
+    }
+
+    public boolean hasReturn(Block block) {
+        return this.hasReturn.contains(block);
     }
 
     public void checkAllPhis() {
@@ -96,6 +101,7 @@ class GraphConstructor {
     }
 
     public Node newReturn(Node result) {
+        this.hasReturn.add(currentBlock());
         return new ReturnNode(currentBlock(), readCurrentSideEffect(), result);
     }
 

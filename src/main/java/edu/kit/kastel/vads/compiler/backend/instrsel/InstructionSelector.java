@@ -233,12 +233,15 @@ public class InstructionSelector {
 
     private TempReg handleJumpNode(JumpNode jumpNode, List<Instruction> builder, PhiInfo phiInfo) {
         TempReg res = null; 
-        if(jumpNode.isPureJump()) {
+        /*if(jumpNode.isPureJump()) {
             for(Node blockPrecessor : jumpNode.block().predecessors()) {
                 maximalMunch(blockPrecessor, builder);
             }
         } else {
             //block contains other instructions as well
+            res = maximalMunch(jumpNode.predecessor(JumpNode.IN), builder);
+        }*/
+        if(!jumpNode.isPureJump()) {
             res = maximalMunch(jumpNode.predecessor(JumpNode.IN), builder);
         }
 
@@ -1096,8 +1099,10 @@ public class InstructionSelector {
         switch(proj.projectionInfo()) {
             case ProjNode.BooleanProjectionInfo.TRUE, ProjNode.BooleanProjectionInfo.FALSE -> {
                 int boolValue = ((ProjNode.BooleanProjectionInfo) proj.projectionInfo()).value;
-                String target = getLabel(getNextBlock(proj));
-                String targetSibling = getLabel(getNextBlock(proj.getSibling()));
+                Block targetBlock = getNextBlock(proj);
+                Block targetSiblingBlock = getNextBlock(proj.getSibling());
+                String target = getLabel(targetBlock);
+                String targetSibling = getLabel(targetSiblingBlock);
 
                 if(predecessor instanceof ConstBoolNode cbn) {
                     if(boolValue == cbn.intValue()) {
@@ -1121,11 +1126,22 @@ public class InstructionSelector {
                         "jmp", new Label(targetSibling)), builder, proj.block()); //unconditional jump, if not
                 }
                 proj.getSibling().instructionInfo.visit(); //mark sibling as visited
+
+                //visit jumps within blocks, if not already happened
+                if(!HANDLED_BLOCKS.contains(targetBlock) 
+                    && targetBlock.hasJumpNode() && targetBlock.getJump().isPureJump()) 
+                    maximalMunch(targetBlock.getJump(), builder);
+                if(!HANDLED_BLOCKS.contains(targetSiblingBlock) 
+                    && targetSiblingBlock.hasJumpNode() && targetSiblingBlock.getJump().isPureJump()) 
+                    maximalMunch(targetSiblingBlock.getJump(), builder);
+
                 return null; // not used
             }
             default -> {
                 return maximalMunch(predecessor, builder);
             }
+
+
         }
     }
 

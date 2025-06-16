@@ -12,35 +12,44 @@ digraph "main" {
 
     subgraph cluster_1 {
         c_1 [width=0, height=0, fixedsize=true, style=invis];
-        2 [label="ConstInt [16]", tooltip="source span: [1:13|1:15]"];
-        3 [label="Proj SIDE_EFFECT", tooltip="source span: [0:0|3:1]"];
-        4 [label="ConstInt [42]", tooltip="source span: [2:11|2:13]"];
-        5 [label="Sub", tooltip="source span: [1:12|1:15]"];
-        6 [label="ConstInt [4]", tooltip="source span: [2:23|2:24]"];
-        7 [label="Return", tooltip="source span: [2:4|2:29]"];
-        8 [label="Add", tooltip="source span: [2:18|2:29]"];
-        9 [label="ConstInt [0]", tooltip="source span: [1:12|1:15]"];
-        10 [label="ConstInt [1]", tooltip="source span: [2:28|2:29]"];
-        11 [label="Proj SIDE_EFFECT", tooltip="source span: [2:11|2:29]"];
-        12 [label="Start", tooltip="source span: [0:0|3:1]"];
-        13 [label="ShiftRight", tooltip="source span: [2:18|2:24]"];
-        14 [label="Div", tooltip="source span: [2:11|2:29]"];
-        15 [label="Proj RESULT", tooltip="source span: [2:11|2:29]"];
+        2 [label="NotBW", tooltip="source span: [3:20|3:27]"];
+        3 [label="Return", tooltip="source span: [3:13|3:27]"];
     }
 
-    7 -> c_0 [label=0, lhead=cluster_0];
-    11 -> 7 [label=0];
-    14 -> 11 [label=0];
-    4 -> 14 [label=0];
-    8 -> 14 [label=1];
-    13 -> 8 [label=0];
-    5 -> 13 [label=0];
-    9 -> 5 [label=0];
-    2 -> 5 [label=1];
-    6 -> 13 [label=1];
-    10 -> 8 [label=1];
-    3 -> 14 [label=2];
-    12 -> 3 [label=0];
-    15 -> 7 [label=1];
-    14 -> 15 [label=0];
+    subgraph cluster_4 {
+        c_4 [width=0, height=0, fixedsize=true, style=invis];
+        5 [label="Return", tooltip="source span: [4:2|4:10]"];
+    }
+
+    subgraph cluster_6 {
+        c_6 [width=0, height=0, fixedsize=true, style=invis];
+        7 [label="Jump", tooltip="source span: [3:2|3:27]"];
+    }
+
+    subgraph cluster_8 {
+        c_8 [width=0, height=0, fixedsize=true, style=invis];
+        9 [label="Proj FALSE", tooltip="source span: [3:2|3:27]"];
+        10 [label="Not", tooltip="source span: [3:6|3:11]"];
+        11 [label="Proj TRUE", tooltip="source span: [3:2|3:27]"];
+        12 [label="ConstBool [false]", tooltip="source span: [1:14|1:19]"];
+        13 [label="Start", tooltip="source span: [0:0|5:1]"];
+        14 [label="ConstInt [65530]", tooltip="source span: [2:15|2:21]"];
+        15 [label="ConstInt [0]", tooltip="source span: [4:9|4:10]"];
+        16 [label="Proj SIDE_EFFECT", tooltip="source span: [0:0|5:1]"];
+    }
+
+    3 -> c_0 [label=0, lhead=cluster_0];
+    11 -> c_1 [label=0, lhead=cluster_1];
+    10 -> 11 [label=0];
+    12 -> 10 [label=0];
+    16 -> 3 [label=0];
+    13 -> 16 [label=0];
+    2 -> 3 [label=1];
+    14 -> 2 [label=0];
+    5 -> c_0 [label=1, lhead=cluster_0];
+    7 -> c_4 [label=0, lhead=cluster_4];
+    9 -> c_6 [label=0, lhead=cluster_6];
+    10 -> 9 [label=0];
+    16 -> 5 [label=0];
+    15 -> 5 [label=1];
 }

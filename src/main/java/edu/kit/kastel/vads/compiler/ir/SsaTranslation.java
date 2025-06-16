@@ -7,6 +7,7 @@ import java.util.function.BinaryOperator;
 
 import edu.kit.kastel.vads.compiler.ir.node.Block;
 import edu.kit.kastel.vads.compiler.ir.node.DivNode;
+import edu.kit.kastel.vads.compiler.ir.node.JumpNode;
 import edu.kit.kastel.vads.compiler.ir.node.ModNode;
 import edu.kit.kastel.vads.compiler.ir.node.Node;
 import edu.kit.kastel.vads.compiler.ir.node.ProjNode;
@@ -256,20 +257,30 @@ public class SsaTranslation {
             ProjNode projFalse = data.constructor.newProj(condition, ProjNode.BooleanProjectionInfo.FALSE);
             projTrue.setSibling(projFalse);
             projFalse.setSibling(projTrue);
-            data.constructor.sealBlock(data.constructor.currentBlock());
+            data.constructor.sealBlock(data.currentBlock());
             //create if/else body blocks
             Block ifBody = data.constructor.newBlock(Block.BlockType.IF_BODY, projTrue);
             ifStatementTree.if_body().accept(this, data);
-            Node jumpIf = data.constructor.newJump();
+            Node jumpIf = null; 
+            if(!data.constructor.hasReturn(ifBody)) {
+                jumpIf = data.constructor.newJump();
+                if(jumpIf instanceof JumpNode jI) ifBody.registerJump(jI);
+            }
             data.constructor.sealBlock(ifBody);
             Block elseBody = data.constructor.newBlock(Block.BlockType.ELSE_BODY, projFalse);
             if (ifStatementTree.else_body() != null) {
                 ifStatementTree.else_body().accept(this, data);
             }
-            Node jumpElse = data.constructor.newJump();
+            Node jumpElse = null;
+            if(!data.constructor.hasReturn(elseBody)) {
+                jumpElse = data.constructor.newJump();
+                if(jumpElse instanceof JumpNode jE) elseBody.registerJump(jE);
+            }
             data.constructor.sealBlock(elseBody);
-            data.constructor.newBlock(Block.BlockType.AFTER_IF, jumpIf, jumpElse); //following block
-            data.constructor.sealBlock(data.constructor.currentBlock());
+            Block next = data.constructor.newBlock(Block.BlockType.AFTER_IF); //following block
+            if(jumpIf != null) next.addPredecessor(jumpIf);
+            if(jumpElse != null) next.addPredecessor(jumpElse);
+            data.constructor.sealBlock(data.currentBlock());
             popSpan();
             return NOT_AN_EXPRESSION;
         }
@@ -293,7 +304,7 @@ public class SsaTranslation {
             Node jumpElse = data.constructor.newJump();
             data.constructor.sealBlock(elseBody);
             data.constructor.newBlock(Block.BlockType.AFTER_IF, jumpIf, jumpElse); //following block
-            data.constructor.sealBlock(data.constructor.currentBlock());
+            data.constructor.sealBlock(data.currentBlock());
             //create join node
             Node phi = data.constructor.newPhi();
             phi.addPredecessor(ifValue);
@@ -323,7 +334,7 @@ public class SsaTranslation {
             Node jumpEnd = data.constructor.newJump();
             data.constructor.sealBlock(elseBody);
             data.constructor.newBlock(jumpEnd, whileBody); //following block
-            data.constructor.sealBlock(data.constructor.currentBlock());
+            data.constructor.sealBlock(data.currentBlock());
             popSpan();
             return NOT_AN_EXPRESSION;
         }
