@@ -232,16 +232,14 @@ public class InstructionSelector {
     }   
 
     private TempReg handleJumpNode(JumpNode jumpNode, List<Instruction> builder, PhiInfo phiInfo) {
-        TempReg res = null; 
-        /*if(jumpNode.isPureJump()) {
+        TempReg res = null;
+
+        if(jumpNode.isPureJump()) {
             for(Node blockPrecessor : jumpNode.block().predecessors()) {
                 maximalMunch(blockPrecessor, builder);
             }
         } else {
             //block contains other instructions as well
-            res = maximalMunch(jumpNode.predecessor(JumpNode.IN), builder);
-        }*/
-        if(!jumpNode.isPureJump()) {
             res = maximalMunch(jumpNode.predecessor(JumpNode.IN), builder);
         }
 
@@ -1128,12 +1126,14 @@ public class InstructionSelector {
                 proj.getSibling().instructionInfo.visit(); //mark sibling as visited
 
                 //visit jumps within blocks, if not already happened
-                if(!HANDLED_BLOCKS.contains(targetBlock) 
-                    && targetBlock.hasJumpNode() && targetBlock.getJump().isPureJump()) 
-                    maximalMunch(targetBlock.getJump(), builder);
-                if(!HANDLED_BLOCKS.contains(targetSiblingBlock) 
-                    && targetSiblingBlock.hasJumpNode() && targetSiblingBlock.getJump().isPureJump()) 
-                    maximalMunch(targetSiblingBlock.getJump(), builder);
+                if(!HANDLED_BLOCKS.contains(targetBlock) && targetBlock.hasJumpNode()) {
+                    String targetLabel = getLabel(getNextBlock(targetBlock.getJump()));
+                    addJumpInstruction(targetLabel, builder, targetBlock);
+                }
+                if(!HANDLED_BLOCKS.contains(targetSiblingBlock) && targetSiblingBlock.hasJumpNode()) {
+                    String targetLabel = getLabel(getNextBlock(targetSiblingBlock.getJump()));
+                    addJumpInstruction(targetLabel, builder, targetSiblingBlock);
+                }
 
                 return null; // not used
             }
