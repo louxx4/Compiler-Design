@@ -261,8 +261,8 @@ public class SsaTranslation {
             if (ifStatementTree.else_body() != null) {
                 ifStatementTree.else_body().accept(this, data);
             }
-            data.constructor.sealBlock(elseBody);
             Node jumpElse = data.constructor.newJump();
+            data.constructor.sealBlock(elseBody);
             data.constructor.newBlock(jumpIf, jumpElse); //following block
             data.constructor.sealBlock(data.constructor.currentBlock());
             popSpan();

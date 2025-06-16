@@ -12,6 +12,10 @@ public final class ConstBoolNode extends Node {
         return this.value;
     }
 
+    public int intValue() {
+        return (this.value ? 1 : 0);
+    }
+
     @Override
     public boolean equals(Object obj) {
         if (obj instanceof ConstBoolNode c) {

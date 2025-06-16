@@ -7,34 +7,61 @@ digraph "main" {
 
     subgraph cluster_0 {
         c_0 [width=0, height=0, fixedsize=true, style=invis];
-        1 [label="Phi", tooltip="source span: [2:8|2:16]"];
-        2 [label="Return", tooltip="source span: [2:8|2:16]"];
+        label=End;
+    }
+
+    subgraph cluster_1 {
+        c_1 [width=0, height=0, fixedsize=true, style=invis];
+        2 [label="Jump", tooltip="source span: [4:2|8:3]"];
     }
 
     subgraph cluster_3 {
         c_3 [width=0, height=0, fixedsize=true, style=invis];
-        label=End;
+        4 [label="Jump", tooltip="source span: [4:2|8:3]"];
     }
 
-    subgraph cluster_4 {
-        c_4 [width=0, height=0, fixedsize=true, style=invis];
-        5 [label="ConstInt [0]", tooltip="source span: [2:15|2:16]"];
-        6 [label="ConstInt [1]", tooltip="source span: [4:16|4:17]"];
+    subgraph cluster_5 {
+        c_5 [width=0, height=0, fixedsize=true, style=invis];
+        6 [label="Proj TRUE", tooltip="source span: [4:2|8:3]"];
+        7 [label="Proj FALSE", tooltip="source span: [4:2|8:3]"];
+        8 [label="ConstInt [3]", tooltip="source span: [2:10|2:11]"];
+        9 [label="Equals", tooltip="source span: [4:6|4:16]"];
+        10 [label="ConstInt [1]", tooltip="source span: [4:6|4:7]"];
+        11 [label="Mul", tooltip="source span: [1:10|1:15]"];
+        12 [label="ConstInt [5]", tooltip="source span: [1:14|1:15]"];
+        13 [label="ConstInt [2]", tooltip="source span: [4:15|4:16]"];
+        14 [label="Proj SIDE_EFFECT", tooltip="source span: [0:0|10:1]"];
+        15 [label="Start", tooltip="source span: [0:0|10:1]"];
+        16 [label="Add", tooltip="source span: [4:6|4:11]"];
+        17 [label="ConstInt [4]", tooltip="source span: [1:10|1:11]"];
+        18 [label="Mul", tooltip="source span: [2:10|2:15]"];
+        19 [label="ConstInt [7]", tooltip="source span: [2:14|2:15]"];
     }
 
-    subgraph cluster_7 {
-        c_7 [width=0, height=0, fixedsize=true, style=invis];
-        8 [label="Return", tooltip="source span: [4:8|4:17]"];
-        9 [label="Phi", tooltip="source span: [4:8|4:17]"];
-        10 [label="Sub", tooltip="source span: [4:15|4:17]"];
+    subgraph cluster_20 {
+        c_20 [width=0, height=0, fixedsize=true, style=invis];
+        21 [label="Phi", tooltip="source span: [9:9|9:10]"];
+        22 [label="Return", tooltip="source span: [9:2|9:10]"];
     }
 
-    2 -> c_3 [label=0, lhead=cluster_3];
-    1 -> 2 [label=0];
-    5 -> 2 [label=1];
-    8 -> c_3 [label=1, lhead=cluster_3];
-    9 -> 8 [label=0];
-    10 -> 8 [label=1];
-    5 -> 10 [label=0];
-    6 -> 10 [label=1];
+    22 -> c_0 [label=0, lhead=cluster_0];
+    4 -> c_20 [label=0, lhead=cluster_20];
+    6 -> c_3 [label=0, lhead=cluster_3];
+    9 -> 6 [label=0];
+    16 -> 9 [label=0];
+    10 -> 16 [label=0];
+    10 -> 16 [label=1];
+    13 -> 9 [label=1];
+    2 -> c_20 [label=1, lhead=cluster_20];
+    7 -> c_1 [label=0, lhead=cluster_1];
+    9 -> 7 [label=0];
+    14 -> 22 [label=0];
+    15 -> 14 [label=0];
+    21 -> 22 [label=1];
+    11 -> 21 [label=0];
+    17 -> 11 [label=0];
+    12 -> 11 [label=1];
+    18 -> 21 [label=1];
+    8 -> 18 [label=0];
+    19 -> 18 [label=1];
 }

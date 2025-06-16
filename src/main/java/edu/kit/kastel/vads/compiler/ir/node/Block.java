@@ -31,10 +31,4 @@ public final class Block extends Node {
     public void createLabel(int id) {
         this.label = "_" + this.type.name().toLowerCase() + "_" + id;
     }
-
-    public Node getLastNode() {
-        int id = this.predecessors().size() - 1;
-        return this.predecessor(id);
-    }
-
 }
