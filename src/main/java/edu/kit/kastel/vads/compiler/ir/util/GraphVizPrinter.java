@@ -1,10 +1,5 @@
 package edu.kit.kastel.vads.compiler.ir.util;
 
-import edu.kit.kastel.vads.compiler.Span;
-import edu.kit.kastel.vads.compiler.ir.IrGraph;
-import edu.kit.kastel.vads.compiler.ir.node.Block;
-import edu.kit.kastel.vads.compiler.ir.node.Node;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -13,6 +8,11 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import edu.kit.kastel.vads.compiler.Span;
+import edu.kit.kastel.vads.compiler.ir.IrGraph;
+import edu.kit.kastel.vads.compiler.ir.node.Block;
+import edu.kit.kastel.vads.compiler.ir.node.Node;
 
 /// Outputs a DOT format string to visualize an [IrGraph].
 public class GraphVizPrinter {
@@ -42,6 +42,7 @@ public class GraphVizPrinter {
         if (!(node instanceof Block)) {
             this.clusters.computeIfAbsent(node.block(), _ -> Collections.newSetFromMap(new IdentityHashMap<>()))
                 .add(node);
+            prepare(node.block(), seen);
         }
         int idx = 0;
         for (Node predecessor : node.predecessors()) {
