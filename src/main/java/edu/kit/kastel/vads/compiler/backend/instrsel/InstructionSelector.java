@@ -64,6 +64,7 @@ public class InstructionSelector {
     private Block CURRENT_BLOCK;
     public Set<Block> HANDLED_BLOCKS = new HashSet(); //holds all handled blocks (= label was printed)
     public List<TempReg> ALL_TREGS = new ArrayList<>(); //holds all temporary registers (used for easier recalloc)
+    public TempReg RES_REG = newTempReg();
 
     // Creates a maximal munch cover of the IR tree.
     // Expects a graph for every function within the program.
@@ -73,10 +74,13 @@ public class InstructionSelector {
             // String funcName = functionGraph.name();
             CURRENT_GRAPH = functionGraph;
             CURRENT_BLOCK = functionGraph.endBlock();
-            TempReg funcResult = newTempReg();
-            for(Node predecessor : CURRENT_BLOCK.predecessors()) {
-                maximalMunch(predecessor, builder, 
-                    new PhiInfo(funcResult, predecessor));
+            if(CURRENT_BLOCK.predecessors().size() == 1) {
+                RES_REG = maximalMunch(CURRENT_BLOCK.predecessor(0), builder);
+            } else {
+                //more than one return
+                for(Node predecessor : CURRENT_BLOCK.predecessors()) {
+                    maximalMunch(predecessor, builder);
+                }
             }
             Block lastBlock = functionGraph.endBlock();
             if(lastBlock.predecessors().size() == 1
@@ -84,8 +88,8 @@ public class InstructionSelector {
                 builder.add(getLabelInstruction(lastBlock.predecessor(0).block()));
             }
             Instruction ins = new Instruction(INSTR_COUNTER++, 
-                "mov", funcResult, new FixReg("eax"));
-            ins.use(funcResult);
+                "mov", RES_REG, new FixReg("eax"));
+            ins.use(RES_REG);
             addInstruction(ins, builder, lastBlock);
             addInstruction(new Instruction(INSTR_COUNTER++, 
                 "cltq"), builder, lastBlock);
@@ -1026,7 +1030,6 @@ public class InstructionSelector {
     private TempReg handleReturnNode(ReturnNode ret, List<Instruction> builder) {
         Node resNode = NodeSupport.predecessorSkipProj(ret, ReturnNode.RESULT);
         Node sideEffect = NodeSupport.predecessorSkipProj(ret, ReturnNode.SIDE_EFFECT);
-        TempReg res;
         Instruction ins;
         
         if(!(sideEffect.equals(resNode) || sideEffect instanceof StartNode || sideEffect instanceof Phi)) {
@@ -1039,20 +1042,26 @@ public class InstructionSelector {
         }
 
         switch(resNode) {
-            case ConstIntNode c -> { 
-                res = newTempReg();
+            case ConstIntNode c -> {
                 ins = new Instruction(INSTR_COUNTER++, 
-                    "mov", new Immediate(c.value()), res);
-                ins.def(res);
+                    "mov", new Immediate(c.value()), RES_REG);
+                ins.def(RES_REG);
                 addInstruction(ins, builder, ret.block()); 
             }
-            default -> res = maximalMunch(resNode, builder);
+            default -> { 
+                TempReg t = maximalMunch(resNode, builder);
+                ins = new Instruction(INSTR_COUNTER++, 
+                    "mov", t, RES_REG);
+                ins.def(RES_REG);
+                ins.use(t);
+                addInstruction(ins, builder, ret.block()); 
+            }
         }
 
         String targetLabel = getLabel(CURRENT_GRAPH.endBlock());
         addJumpInstruction(targetLabel, builder);
 
-        return res;
+        return RES_REG;
     }
 
     private TempReg handleProjNode(ProjNode proj, List<Instruction> builder) {
