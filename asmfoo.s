@@ -9,17 +9,8 @@ movq %rax, %rdi
 movq $0x3C, %rax
 syscall
 _main:
-_while_body_0:
-mov $3, %r12d
-_basic_1:
-mov $1, %r12b
-cmp $0, %r12b
-je _else_body_2
-jmp _while_body_0
-_else_body_2:
-mov $4, %r12d
-jmp _basic_3
-_basic_3:
+_if_body_0:
+mov $0, %r12d
 mov %r12d, %eax
 cltq
 ret
